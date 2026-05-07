@@ -1,11 +1,11 @@
 // Las 6 categorías clásicas del Trivial Pursuit.
-// `id` es la clave usada en JSON de preguntas y para colorear casillas.
+// Colores saturados como los del tablero original.
 
 export const CATEGORIES = [
   {
     id: 'geografia',
     name: 'Geografía',
-    color: '#1565c0',
+    color: '#4A90D9',
     bgColor: '#bbdefb',
     icon: '🌍',
     categoryKey: 'geografia'
@@ -13,7 +13,7 @@ export const CATEGORIES = [
   {
     id: 'entretenimiento',
     name: 'Entretenimiento',
-    color: '#ec407a',
+    color: '#E91E8C',
     bgColor: '#f8bbd0',
     icon: '🎬',
     categoryKey: 'entretenimiento'
@@ -21,7 +21,7 @@ export const CATEGORIES = [
   {
     id: 'historia',
     name: 'Historia',
-    color: '#fbc02d',
+    color: '#F5C518',
     bgColor: '#fff59d',
     icon: '📜',
     categoryKey: 'historia'
@@ -29,7 +29,7 @@ export const CATEGORIES = [
   {
     id: 'arte',
     name: 'Arte y Literatura',
-    color: '#6a1b9a',
+    color: '#9B59B6',
     bgColor: '#e1bee7',
     icon: '🎨',
     categoryKey: 'arte'
@@ -37,7 +37,7 @@ export const CATEGORIES = [
   {
     id: 'ciencia',
     name: 'Ciencia',
-    color: '#2e7d32',
+    color: '#27AE60',
     bgColor: '#c8e6c9',
     icon: '🔬',
     categoryKey: 'ciencia'
@@ -45,7 +45,7 @@ export const CATEGORIES = [
   {
     id: 'deporte',
     name: 'Deporte',
-    color: '#e65100',
+    color: '#E67E22',
     bgColor: '#ffe0b2',
     icon: '⚽',
     categoryKey: 'deporte'

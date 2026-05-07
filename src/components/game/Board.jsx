@@ -7,17 +7,17 @@ import {
 import { CATEGORIES, CATEGORIES_BY_ID } from '../../constants/categories.js';
 
 // Tablero estilo Trivial Pursuit clásico:
-//   - fondo oscuro
-//   - anillo exterior con 42 casillas de colores (separadas por líneas claras)
-//   - 6 brazos radiales con 6 casillas cada uno, del color de la categoría
-//   - centro pequeño y neutro
+//   - fondo azul-gris oscuro
+//   - 72 casillas en el anillo exterior (12 por sector de categoría)
+//   - 6 brazos RECTOS (rectangulares) de 6 casillas cada uno desde el
+//     centro hasta el borde, separados 60º
+//   - sedes (HQ) en el extremo exterior del brazo, casilla más grande con
+//     borde doble
+//   - centro pequeño crema/blanco
 //
 // Props:
-//   - playerPositions: { [playerId]: index }   (-1 = centro)
-//   - players: [{ id, color, name }]
-//   - reachable: number[]
-//   - onCellClick: (index) => void
-//   - renderToken: (player, idx) => ReactNode  ficha personalizada
+//   - playerPositions, players, reachable, onCellClick
+//   - renderToken: (player, idx) => ReactNode opcional
 export default function Board({
   playerPositions = {},
   players = [],
@@ -25,51 +25,65 @@ export default function Board({
   onCellClick,
   renderToken
 }) {
-  const size = 720;
+  const size = 760;
   const cx = size / 2;
   const cy = size / 2;
-  const ringOuter = 340;
-  const ringInner = 270;
-  const centerR = 56;
+
+  // Geometría del tablero
+  const boardR = 360;          // radio total del disco
+  const ringOuter = 360;       // borde exterior del anillo
+  const ringInner = 288;       // borde interior del anillo
+  const centerR = 50;          // radio del círculo central
+  const armWidth = 42;         // anchura de los brazos rectos (≈ ancho de sede)
+  const sedeBoost = 30;        // las sedes sobresalen un poco
+  const cellH = (ringInner - centerR) / SPOKE_CELLS; // altura de cada casilla del brazo
 
   const reachableSet = new Set(reachable);
-  const sliceAngle = (Math.PI * 2) / RING_LENGTH;
-  const segmentLen = (ringInner - centerR) / SPOKE_CELLS;
+  const sliceAngle = (Math.PI * 2) / RING_LENGTH; // 5º
+  const halfSlice = sliceAngle / 2;
 
-  // Path de una cuña anular (a0..a1 radianes; r0..r1 radios)
-  const wedge = (a0, a1, r0, r1) => {
-    const x0o = cx + r1 * Math.cos(a0);
-    const y0o = cy + r1 * Math.sin(a0);
-    const x1o = cx + r1 * Math.cos(a1);
-    const y1o = cy + r1 * Math.sin(a1);
-    const x0i = cx + r0 * Math.cos(a0);
-    const y0i = cy + r0 * Math.sin(a0);
-    const x1i = cx + r0 * Math.cos(a1);
-    const y1i = cy + r0 * Math.sin(a1);
-    return `M ${x0o} ${y0o} A ${r1} ${r1} 0 0 1 ${x1o} ${y1o} L ${x1i} ${y1i} A ${r0} ${r0} 0 0 0 ${x0i} ${y0i} Z`;
+  // Cuña anular para una casilla del anillo (centrada en su ángulo)
+  const ringCellPath = (i, padRad = 0) => {
+    const center = i * sliceAngle - Math.PI / 2;
+    const a0 = center - halfSlice + padRad;
+    const a1 = center + halfSlice - padRad;
+    const x0o = cx + ringOuter * Math.cos(a0);
+    const y0o = cy + ringOuter * Math.sin(a0);
+    const x1o = cx + ringOuter * Math.cos(a1);
+    const y1o = cy + ringOuter * Math.sin(a1);
+    const x0i = cx + ringInner * Math.cos(a0);
+    const y0i = cy + ringInner * Math.sin(a0);
+    const x1i = cx + ringInner * Math.cos(a1);
+    const y1i = cy + ringInner * Math.sin(a1);
+    return `M ${x0o} ${y0o} A ${ringOuter} ${ringOuter} 0 0 1 ${x1o} ${y1o} L ${x1i} ${y1i} A ${ringInner} ${ringInner} 0 0 0 ${x0i} ${y0i} Z`;
   };
 
-  const cellWedgePath = (i, padRad = 0) => {
-    const a0 = i * sliceAngle - Math.PI / 2 + padRad;
-    const a1 = (i + 1) * sliceAngle - Math.PI / 2 - padRad;
-    return wedge(a0, a1, ringInner, ringOuter);
+  // Sede destacada: igual que ringCellPath pero con radio exterior mayor
+  const sedeCellPath = (i, padRad = 0) => {
+    const center = i * sliceAngle - Math.PI / 2;
+    const a0 = center - halfSlice * 1.4 + padRad;
+    const a1 = center + halfSlice * 1.4 - padRad;
+    const outer = ringOuter + sedeBoost;
+    const x0o = cx + outer * Math.cos(a0);
+    const y0o = cy + outer * Math.sin(a0);
+    const x1o = cx + outer * Math.cos(a1);
+    const y1o = cy + outer * Math.sin(a1);
+    const x0i = cx + ringInner * Math.cos(a0);
+    const y0i = cy + ringInner * Math.sin(a0);
+    const x1i = cx + ringInner * Math.cos(a1);
+    const y1i = cy + ringInner * Math.sin(a1);
+    return `M ${x0o} ${y0o} A ${outer} ${outer} 0 0 1 ${x1o} ${y1o} L ${x1i} ${y1i} A ${ringInner} ${ringInner} 0 0 0 ${x0i} ${y0i} Z`;
   };
 
-  // Casilla de un brazo (radial). catIdx 0..5; segIdx 0..5 (0=más cerca del centro)
-  const spokeCellPath = (catIdx, segIdx) => {
-    const sedeIndex = (catIdx * RING_LENGTH) / CATEGORIES.length; // 0,7,14,...
-    const a0 = sedeIndex * sliceAngle - Math.PI / 2 + 0.012;
-    const a1 = (sedeIndex + 1) * sliceAngle - Math.PI / 2 - 0.012;
-    const r0 = centerR + segIdx * segmentLen;
-    const r1 = centerR + (segIdx + 1) * segmentLen;
-    return wedge(a0, a1, r0, r1);
-  };
-
-  const cellCenter = (i) => {
-    const a = (i + 0.5) * sliceAngle - Math.PI / 2;
+  // Centro de una casilla del anillo (para fichas)
+  const ringCellCenter = (i) => {
+    const a = i * sliceAngle - Math.PI / 2;
     const r = (ringOuter + ringInner) / 2;
     return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
   };
+
+  // Ángulo (en grados) del brazo j (0..5) — sede en el extremo
+  const spokeAngleDeg = (j) => -90 + j * 60;
 
   // Agrupar fichas por casilla
   const fichasPorCasilla = {};
@@ -86,105 +100,113 @@ export default function Board({
       role="img"
       aria-label="Tablero de Trivial"
     >
-      {/* Fondo oscuro del tablero */}
-      <circle cx={cx} cy={cy} r={ringOuter + 18} fill="#0d2238" />
+      {/* Fondo azul-gris del tablero */}
+      <circle cx={cx} cy={cy} r={boardR + 18} fill="#2d5a7b" />
       <circle
         cx={cx}
         cy={cy}
-        r={ringOuter + 18}
+        r={boardR + 18}
         fill="none"
-        stroke="#08172a"
+        stroke="#1c3e57"
         strokeWidth={6}
       />
 
-      {/* Brazos: 6 categorías × 6 casillas */}
-      {CATEGORIES.map((cat, catIdx) => (
-        <g key={`spoke-${cat.id}`}>
-          {Array.from({ length: SPOKE_CELLS }).map((_, segIdx) => (
-            <path
-              key={segIdx}
-              d={spokeCellPath(catIdx, segIdx)}
-              fill={cat.color}
-              stroke="#ffffff"
-              strokeWidth={2}
-            />
-          ))}
-        </g>
-      ))}
-
-      {/* Anillo exterior: 42 casillas */}
+      {/* Anillo exterior: 72 casillas (las sedes se dibujan en otro grupo) */}
       {BOARD_POSITIONS.map((cell) => {
+        if (cell.isHQ) return null; // sedes después
         const cat = CATEGORIES_BY_ID[cell.category];
-        const isReachable = reachableSet.has(cell.index);
-        const center = cellCenter(cell.index);
         return (
-          <g key={cell.index} className={isReachable ? 'is-reachable' : ''}>
-            <path
-              d={cellWedgePath(cell.index, 0.012)}
-              fill={cat?.color || '#777'}
-              stroke="#ffffff"
-              strokeWidth={2.5}
-              onClick={() => onCellClick?.(cell.index)}
-              style={{ cursor: isReachable ? 'pointer' : 'default' }}
-            />
-            {cell.isHQ && (
-              <>
-                <circle
-                  cx={center.x}
-                  cy={center.y}
-                  r={22}
-                  fill="#ffffff"
-                  stroke={cat?.color}
-                  strokeWidth={3}
+          <path
+            key={cell.index}
+            d={ringCellPath(cell.index)}
+            fill={cat?.color || '#666'}
+            stroke="#ffffff"
+            strokeWidth={1.5}
+            onClick={() => onCellClick?.(cell.index)}
+          />
+        );
+      })}
+
+      {/* Brazos rectos: 6 brazos × 6 casillas */}
+      {CATEGORIES.map((cat, j) => {
+        const angle = spokeAngleDeg(j);
+        return (
+          <g key={`spoke-${cat.id}`} transform={`rotate(${angle} ${cx} ${cy})`}>
+            {Array.from({ length: SPOKE_CELLS }).map((_, k) => {
+              // Pre-rotación: el brazo apunta hacia la derecha (+x).
+              // Cell k ocupa de x = cx + centerR + k*cellH
+              const x = cx + centerR + k * cellH;
+              const y = cy - armWidth / 2;
+              return (
+                <rect
+                  key={k}
+                  x={x}
+                  y={y}
+                  width={cellH}
+                  height={armWidth}
+                  fill={cat.color}
+                  stroke="#ffffff"
+                  strokeWidth={2}
                 />
-                <text
-                  x={center.x}
-                  y={center.y + 7}
-                  textAnchor="middle"
-                  fontSize="22"
-                  style={{ pointerEvents: 'none' }}
-                >
-                  {cat?.icon}
-                </text>
-              </>
-            )}
-            {isReachable && (
-              <circle
-                cx={center.x}
-                cy={center.y}
-                r={20}
-                fill="rgba(255,255,200,0.55)"
-                stroke="#fff8a0"
-                strokeWidth={2}
-                strokeDasharray="4 3"
-                onClick={() => onCellClick?.(cell.index)}
-                style={{ cursor: 'pointer' }}
-              />
-            )}
+              );
+            })}
           </g>
         );
       })}
 
-      {/* Centro: pequeño círculo neutro */}
+      {/* Sedes: por encima del resto, con borde doble */}
+      {BOARD_POSITIONS.filter((c) => c.isHQ).map((cell) => {
+        const cat = CATEGORIES_BY_ID[cell.category];
+        const isReachable = reachableSet.has(cell.index);
+        return (
+          <g key={`hq-${cell.index}`} className={isReachable ? 'is-reachable' : ''}>
+            {/* Halo exterior blanco */}
+            <path d={sedeCellPath(cell.index, 0)} fill="#ffffff" />
+            {/* Casilla coloreada interior */}
+            <path
+              d={sedeCellPath(cell.index, 0.025)}
+              fill={cat?.color}
+              stroke="#ffffff"
+              strokeWidth={2}
+              onClick={() => onCellClick?.(cell.index)}
+              style={{ cursor: isReachable ? 'pointer' : 'default' }}
+            />
+          </g>
+        );
+      })}
+
+      {/* Casillas alcanzables resaltadas */}
+      {Array.from(reachableSet).map((idx) => {
+        const center = ringCellCenter(idx);
+        return (
+          <circle
+            key={`reach-${idx}`}
+            cx={center.x}
+            cy={center.y}
+            r={20}
+            fill="rgba(255,255,150,0.55)"
+            stroke="#fff8a0"
+            strokeWidth={2.5}
+            strokeDasharray="4 3"
+            onClick={() => onCellClick?.(idx)}
+            style={{ cursor: 'pointer' }}
+          />
+        );
+      })}
+
+      {/* Centro: círculo crema */}
       <g
         className="board__center"
         onClick={() => onCellClick?.(CENTER_INDEX)}
         style={{ cursor: 'pointer' }}
       >
-        <circle
-          cx={cx}
-          cy={cy}
-          r={centerR}
-          fill="#f6efd8"
-          stroke="#ffffff"
-          strokeWidth={3}
-        />
+        <circle cx={cx} cy={cy} r={centerR} fill="#f6efd8" stroke="#ffffff" strokeWidth={3} />
       </g>
 
-      {/* Fichas (renderizadas por el padre con renderToken o círculo simple) */}
+      {/* Fichas */}
       {Object.entries(fichasPorCasilla).map(([idxStr, list]) => {
         const idx = Number(idxStr);
-        const center = idx === CENTER_INDEX ? { x: cx, y: cy } : cellCenter(idx);
+        const center = idx === CENTER_INDEX ? { x: cx, y: cy } : ringCellCenter(idx);
         return list.map((p, i) => {
           const offsetX = (i % 2) * 18 - 9;
           const offsetY = Math.floor(i / 2) * 18 - 9;
