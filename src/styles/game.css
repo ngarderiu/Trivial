@@ -40,65 +40,76 @@
   font-size: 1rem;
 }
 
-/* Game screen */
+/* Game screen — tablero izquierda 65%, panel derecha */
 .game {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 65fr 35fr;
   gap: var(--space-4);
   padding: var(--space-4);
   min-height: 100vh;
   position: relative;
 }
-.game__top {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
-  gap: var(--space-4);
-  align-items: center;
-  justify-items: center;
-  flex: 1;
-}
-.game__controls {
+.game__board {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
+  justify-content: center;
+  position: relative;
+}
+.game__board .board {
+  width: 100%;
+  height: auto;
+  max-width: 720px;
+}
+
+.game__panel {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-4);
+  padding: var(--space-4);
   background: var(--color-card);
   border-radius: var(--radius-md);
-  padding: var(--space-4);
   box-shadow: var(--shadow-sm);
-  min-width: 200px;
 }
-.game__bottom {
-  display: flex;
+.game__panel-block { display: flex; flex-direction: column; align-items: center; }
+.game__panel-block--dice { padding-top: var(--space-2); }
+.game__panel-block--cards {
+  width: 100%;
+  align-items: stretch;
   justify-content: center;
-  margin-top: auto;
 }
-.game__turn { font-size: 1.05rem; text-align: center; }
-.game__hint { color: var(--color-muted); font-style: italic; margin: 0; text-align: center; }
+.game__panel-block--turn {
+  border-top: 1px dashed var(--color-border);
+  padding-top: var(--space-3);
+  width: 100%;
+  text-align: center;
+}
 
-/* Área de los 6 stacks de cartas */
+.game__turn { font-size: 1.05rem; }
+.game__hint { color: var(--color-muted); font-style: italic; margin: var(--space-2) 0 0; }
+
+/* Área de cartas: ahora vertical */
 .card-area {
   display: flex;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background: rgba(255, 255, 255, 0.7);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(4px);
-  box-shadow: var(--shadow-sm);
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: rgba(13, 34, 56, 0.04);
+  border-radius: var(--radius-md);
+  width: 100%;
 }
 .card-area__slot {
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 /* Tablero SVG */
 .board { width: 100%; max-width: 620px; height: auto; }
 
-/* HUD esquinas */
+/* HUD: 2 jugadores arriba a la izquierda y 2 arriba a la derecha del tablero */
 .game-hud {
-  position: fixed;
+  position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 5;
@@ -110,10 +121,10 @@
   position: absolute;
   pointer-events: auto;
 }
-.player-marker.corner-top-left     { top: var(--space-3); left: var(--space-3); }
-.player-marker.corner-top-right    { top: var(--space-3); right: var(--space-3); }
-.player-marker.corner-bottom-left  { bottom: var(--space-3); left: var(--space-3); }
-.player-marker.corner-bottom-right { bottom: var(--space-3); right: var(--space-3); }
+.player-marker.corner-top-left     { top: var(--space-3);    left: var(--space-3); }
+.player-marker.corner-bottom-left  { top: 230px;             left: var(--space-3); }
+.player-marker.corner-top-right    { top: var(--space-3);    right: var(--space-3); }
+.player-marker.corner-bottom-right { top: 230px;             right: var(--space-3); }
 
 /* Victory */
 .victory {

@@ -15,11 +15,15 @@ import {
 } from '../../utils/index.js';
 
 // Pantalla principal del juego.
+// Layout:
+//   - izquierda: tablero (65%)
+//   - derecha:   dado arriba, cartas verticales en medio, info turno abajo
+//
 // Subfases internas:
 //   - 'awaiting-dice'    : esperando que el jugador tire el dado
 //   - 'awaiting-cell'    : se ha tirado, hay que elegir casilla
 //   - 'awaiting-category': el jugador está en el centro y elige categoría
-//   - 'awaiting-question': hay una pregunta activa (carta volando)
+//   - 'awaiting-question': hay una pregunta activa
 export default function GameScreen({ game }) {
   const {
     players,
@@ -44,7 +48,6 @@ export default function GameScreen({ game }) {
 
   const [step, setStep] = useState(isAtCenter ? 'awaiting-category' : 'awaiting-dice');
 
-  // Sincroniza al cambiar de jugador
   const ensureStepForCurrent = () => {
     if (isAtCenter && step !== 'awaiting-category' && step !== 'awaiting-question') {
       setStep('awaiting-category');
@@ -120,7 +123,6 @@ export default function GameScreen({ game }) {
   const modeDef = GAME_MODES[mode.toUpperCase()] ?? GAME_MODES.CLASSIC;
   const slots = modeDef.quesitosToWin;
 
-  // Ficha del jugador en el tablero: una mini rueda con sus quesitos
   const renderToken = (player) => (
     <QuesitoWheel
       size={32}
@@ -133,14 +135,13 @@ export default function GameScreen({ game }) {
 
   return (
     <main className="game">
-      <GameHUD
-        players={players}
-        currentPlayerId={currentPlayer?.id}
-        quesitos={quesitos}
-        mode={mode}
-      />
-
-      <div className="game__top">
+      <section className="game__board">
+        <GameHUD
+          players={players}
+          currentPlayerId={currentPlayer?.id}
+          quesitos={quesitos}
+          mode={mode}
+        />
         <Board
           players={players}
           playerPositions={positions}
@@ -148,38 +149,46 @@ export default function GameScreen({ game }) {
           onCellClick={handleCellClick}
           renderToken={renderToken}
         />
+      </section>
 
-        <div className="game__controls">
-          <div className="game__turn">
-            <span>Turno de:</span>{' '}
-            <strong style={{ color: currentPlayer?.color }}>{currentPlayer?.name}</strong>
-          </div>
+      <aside className="game__panel">
+        <div className="game__panel-block game__panel-block--dice">
           <Dice
             onRoll={handleRoll}
             value={lastDice}
             disabled={step !== 'awaiting-dice'}
           />
+        </div>
+
+        <div className="game__panel-block game__panel-block--cards">
+          <CardStackArea
+            clickableCategories={stacksClickable}
+            onPickCategory={handleCategoryStack}
+            activeCategory={question.activeCategory}
+            question={question.activeQuestion}
+            revealed={question.revealed}
+            onReveal={question.reveal}
+            onCorrect={handleCorrect}
+            onWrong={handleWrong}
+          />
+        </div>
+
+        <div className="game__panel-block game__panel-block--turn">
+          <div className="game__turn">
+            <span>Turno de:</span>{' '}
+            <strong style={{ color: currentPlayer?.color }}>{currentPlayer?.name}</strong>
+          </div>
           {step === 'awaiting-cell' && (
             <p className="game__hint">Elige una casilla resaltada.</p>
           )}
           {step === 'awaiting-category' && (
             <p className="game__hint">Estás en el centro: elige una categoría.</p>
           )}
+          {step === 'awaiting-dice' && (
+            <p className="game__hint">¡Tira el dado!</p>
+          )}
         </div>
-      </div>
-
-      <div className="game__bottom">
-        <CardStackArea
-          clickableCategories={stacksClickable}
-          onPickCategory={handleCategoryStack}
-          activeCategory={question.activeCategory}
-          question={question.activeQuestion}
-          revealed={question.revealed}
-          onReveal={question.reveal}
-          onCorrect={handleCorrect}
-          onWrong={handleWrong}
-        />
-      </div>
+      </aside>
     </main>
   );
 }
