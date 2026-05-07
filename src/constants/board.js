@@ -34,6 +34,7 @@ export const BOARD_POSITIONS = Array.from({ length: RING_SIZE }, (_, i) => {
 
 export const CENTER_INDEX = -1; // valor especial para el centro
 export const RING_LENGTH = RING_SIZE;
+export const SPOKE_CELLS = 6; // casillas por brazo (decorativas, no transitables)
 
 // Dado: 1..6
 export const DICE_MIN = 1;
