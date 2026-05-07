@@ -132,14 +132,22 @@ export default function Board({
         );
       })}
 
-      {/* Brazos: rectángulos que NO tocan el centro */}
-      {CATEGORIES.map((cat, j) => {
+      {/* Brazos: cada uno es UN solo color (el de la categoría de la sede
+          que tiene en su extremo). 6 casillas rectangulares por brazo. */}
+      {CATEGORIES.map((_, j) => {
+        const sedeIndex = j * (RING_LENGTH / CATEGORIES.length);
+        const sedeCell = BOARD_POSITIONS[sedeIndex];
+        const cat = CATEGORIES_BY_ID[sedeCell.category];
         const angle = spokeAngleDeg(j);
+        const armFill = cat.color; // único color para todo el brazo
+
         return (
-          <g key={`spoke-${cat.id}`} transform={`rotate(${angle} ${cx} ${cy})`}>
+          <g
+            key={`spoke-${cat.id}`}
+            transform={`rotate(${angle} ${cx} ${cy})`}
+          >
             {Array.from({ length: SPOKE_CELLS }).map((_, k) => {
               // Pre-rotación: brazo apunta hacia +x.
-              // Cell k de [armInner + k*cellH, armInner + (k+1)*cellH]
               const x = cx + armInner + k * armCellH;
               const y = cy - armWidth / 2;
               return (
@@ -149,7 +157,7 @@ export default function Board({
                   y={y}
                   width={armCellH - 4}
                   height={armWidth}
-                  fill={cat.color}
+                  fill={armFill}
                   stroke="#ffffff"
                   strokeWidth={3}
                   rx={2}
