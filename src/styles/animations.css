@@ -1,21 +1,39 @@
-@keyframes dice-spin {
-  0%   { transform: rotate(0deg)    scale(1);     }
-  20%  { transform: rotate(180deg)  scale(1.18);  }
-  40%  { transform: rotate(360deg)  scale(0.92);  }
-  60%  { transform: rotate(540deg)  scale(1.12);  }
-  80%  { transform: rotate(700deg)  scale(0.98);  }
-  100% { transform: rotate(720deg)  scale(1);     }
+/* Dado volando por encima del tablero.
+   Va de su posición (panel derecho) a flotar sobre el tablero,
+   se queda allí girando, y vuelve a su sitio. */
+@keyframes dice-fly {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  10% {
+    transform: translate(-12vw, -20vh) rotate(180deg) scale(1.4);
+  }
+  25% {
+    /* Alcanza el centro del tablero */
+    transform: translate(-30vw, -10vh) rotate(540deg) scale(2);
+  }
+  40% {
+    transform: translate(-30vw, -8vh) rotate(900deg) scale(2);
+  }
+  55% {
+    transform: translate(-30vw, -10vh) rotate(1260deg) scale(2);
+  }
+  70% {
+    /* Sigue en el aire, se detiene un instante */
+    transform: translate(-30vw, -10vh) rotate(1440deg) scale(2);
+  }
+  85% {
+    transform: translate(-15vw, -16vh) rotate(1620deg) scale(1.4);
+  }
+  100% {
+    transform: translate(0, 0) rotate(1800deg) scale(1);
+  }
 }
-@keyframes dice-bounce {
-  0%, 100% { translate: 0 0; }
-  35%      { translate: 0 -16px; }
-  60%      { translate: 0 4px; }
-  80%      { translate: 0 -2px; }
-}
-.dice.is-rolling {
-  animation:
-    dice-spin 0.9s cubic-bezier(0.45, 0.05, 0.2, 1.05),
-    dice-bounce 0.9s ease-in-out;
+.dice.is-flying {
+  animation: dice-fly 2.5s cubic-bezier(0.4, 0.05, 0.4, 1.05) forwards;
+  z-index: 1000;
+  position: relative;
+  box-shadow: 0 24px 36px rgba(0, 0, 0, 0.35);
 }
 
 @keyframes reachable-pulse {

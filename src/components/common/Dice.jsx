@@ -1,14 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 
-// Dado siempre visible. Al pulsar:
-//   1. Se anima (rotación + rebote) y los números cambian rápido
-//   2. Al detenerse, queda mostrando el valor real
-//   3. Permanece deshabilitado hasta que el padre cambie disabled=false
+// Dado siempre visible. Al hacer click:
+//   1. Vuela hacia la izquierda (sobre el tablero), girando y rebotando
+//   2. Se queda flotando ahí mientras los números cambian rápido
+//   3. Detiene el ticker, queda mostrando el resultado ~1 s
+//   4. Vuelve a su posición y se desactiva hasta el siguiente turno
+//
+// Total: ~2,8 s de animación.
 //
 // Props:
-//   - disabled: bloquea interacción (p. ej. mientras se elige casilla)
-//   - value: número actual visible cuando no está animando
-//   - onRoll(): callback cuando termina la animación
+//   - disabled, value, onRoll() (igual que antes)
+const FLIGHT_MS = 700;
+const HOVER_MS = 1100;
+const RETURN_MS = 700;
+const TOTAL_MS = FLIGHT_MS + HOVER_MS + RETURN_MS;
+
 export default function Dice({ disabled = false, onRoll, value = null }) {
   const [rolling, setRolling] = useState(false);
   const [face, setFace] = useState(value);
@@ -24,23 +30,24 @@ export default function Dice({ disabled = false, onRoll, value = null }) {
     if (disabled || rolling) return;
     setRolling(true);
 
-    // Cambio rápido de números durante la animación
+    // Ticker rápido durante el vuelo + flotación, se detiene antes del retorno
     tickerRef.current = setInterval(() => {
       setFace(Math.floor(Math.random() * 6) + 1);
     }, 70);
+    setTimeout(() => clearInterval(tickerRef.current), FLIGHT_MS + HOVER_MS - 200);
 
+    // Al final, notifica al juego (que decidirá el valor real)
     setTimeout(() => {
-      clearInterval(tickerRef.current);
       setRolling(false);
       onRoll?.();
-    }, 900);
+    }, TOTAL_MS);
   };
 
   return (
     <div className="dice-wrap">
       <button
         type="button"
-        className={`dice ${rolling ? 'is-rolling' : ''} ${disabled ? 'is-disabled' : ''}`}
+        className={`dice ${rolling ? 'is-flying' : ''} ${disabled ? 'is-disabled' : ''}`}
         onClick={handleClick}
         aria-label="Tirar dado"
         disabled={disabled || rolling}
