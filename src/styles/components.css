@@ -1,0 +1,145 @@
+/* Botones genéricos */
+.btn {
+  appearance: none;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-text);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+  box-shadow: var(--shadow-sm);
+}
+.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn--primary { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
+.btn--ok      { background: var(--color-ok);     color: #fff; border-color: var(--color-ok); }
+.btn--ko      { background: var(--color-ko);     color: #fff; border-color: var(--color-ko); }
+.btn--big     { padding: var(--space-4) var(--space-6); font-size: 1.1rem; font-weight: 700; }
+
+/* Dado */
+.dice {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-md);
+  background: #fff;
+  border: 3px solid #222;
+  font-size: 2.5rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+}
+.dice.is-disabled { opacity: 0.6; cursor: not-allowed; }
+.dice-face { line-height: 1; }
+
+/* Player marker */
+.player-marker {
+  background: #fff;
+  border-radius: var(--radius-md);
+  border: 3px solid;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  width: 180px;
+  transition: transform 0.15s ease;
+}
+.player-marker.is-active { transform: scale(1.05); box-shadow: var(--shadow-md); }
+.player-marker__head {
+  color: #fff;
+  padding: var(--space-2);
+  font-weight: 700;
+  text-align: center;
+}
+.player-marker__quesitos {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-2);
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+.player-marker__quesitos .quesito {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+/* Card stack */
+.card-stack {
+  position: relative;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  width: 110px;
+  height: 140px;
+  padding: 0;
+}
+.card-stack.is-disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.5); }
+.card-stack__sheet {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+  background: var(--cat-color, #888);
+  border: 2px solid #fff;
+  box-shadow: var(--shadow-sm);
+}
+.card-stack__sheet--3 { transform: translate(6px, 6px); opacity: 0.6; }
+.card-stack__sheet--2 { transform: translate(3px, 3px); opacity: 0.85; }
+.card-stack__sheet--1 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  padding: var(--space-2);
+}
+.card-stack__icon { font-size: 2.4rem; }
+.card-stack__label { font-size: 0.85rem; margin-top: 4px; }
+
+/* Question card */
+.question-card {
+  background: #fff;
+  border-radius: var(--radius-md);
+  border-top: 6px solid var(--cat-color, var(--color-accent));
+  box-shadow: var(--shadow-md);
+  padding: var(--space-4);
+  width: 100%;
+}
+.question-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  font-weight: 700;
+  color: var(--cat-color, var(--color-accent));
+}
+.question-card__icon { font-size: 1.6rem; }
+.question-card__close {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.question-card__question {
+  font-size: 1.05rem;
+  line-height: 1.4;
+  margin: 0 0 var(--space-3);
+}
+.question-card__answer {
+  background: #f6f6f1;
+  border-left: 4px solid var(--cat-color, var(--color-accent));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+}
+.question-card__choices { display: flex; gap: var(--space-2); }
+.question-card__footer { margin-top: var(--space-3); }

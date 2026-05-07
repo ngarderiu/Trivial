@@ -1,0 +1,24 @@
+@keyframes dice-shake {
+  0%   { transform: rotate(0deg); }
+  25%  { transform: rotate(-15deg) scale(1.05); }
+  50%  { transform: rotate(15deg)  scale(1.05); }
+  75%  { transform: rotate(-10deg); }
+  100% { transform: rotate(0deg); }
+}
+.dice.is-rolling {
+  animation: dice-shake 0.45s ease-in-out;
+}
+
+@keyframes reachable-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 1; }
+}
+.is-reachable circle[stroke-dasharray] {
+  animation: reachable-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes card-pop {
+  0%   { transform: translateY(8px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+.question-card { animation: card-pop 0.25s ease-out; }
