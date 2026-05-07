@@ -1,5 +1,6 @@
 export { default as Dice } from './common/Dice.jsx';
 export { default as PlayerMarker } from './common/PlayerMarker.jsx';
+export { default as QuesitoWheel } from './common/QuesitoWheel.jsx';
 export { default as CardStack } from './common/CardStack.jsx';
 export { default as FlyingCard } from './common/FlyingCard.jsx';
 export { default as CardStackArea } from './game/CardStackArea.jsx';

@@ -91,28 +91,11 @@
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
 .player-marker__name { font-size: 1.02rem; }
-.player-marker__quesitos {
-  list-style: none;
-  margin: 0;
-  padding: var(--space-2);
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
-}
-.player-marker__quesitos .quesito {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid;
+.player-marker__wheel {
   display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  transition: transform var(--transition-base);
-}
-.player-marker__quesitos .quesito.is-owned {
-  transform: scale(1);
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.18) inset;
+  padding: var(--space-3) var(--space-2);
+  background: linear-gradient(180deg, #fff 0%, #f4f1ea 100%);
 }
 
 /* Card stack */

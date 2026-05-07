@@ -3,7 +3,9 @@ import Board from '../game/Board.jsx';
 import GameHUD from '../game/GameHUD.jsx';
 import CardStackArea from '../game/CardStackArea.jsx';
 import Dice from '../common/Dice.jsx';
+import QuesitoWheel from '../common/QuesitoWheel.jsx';
 import { CENTER_INDEX } from '../../constants/board.js';
+import { GAME_MODES } from '../../constants/gameConfig.js';
 import { useBoard } from '../../hooks/useBoard.js';
 import { useQuestion } from '../../hooks/useQuestion.js';
 import {
@@ -115,12 +117,27 @@ export default function GameScreen({ game }) {
     ? missingCategories(owned)
     : [];
 
+  const modeDef = GAME_MODES[mode.toUpperCase()] ?? GAME_MODES.CLASSIC;
+  const slots = modeDef.quesitosToWin;
+
+  // Ficha del jugador en el tablero: una mini rueda con sus quesitos
+  const renderToken = (player) => (
+    <QuesitoWheel
+      size={32}
+      slots={slots}
+      earned={quesitos[player.id] ?? []}
+      rimColor={player.color}
+      asSvg
+    />
+  );
+
   return (
     <main className="game">
       <GameHUD
         players={players}
         currentPlayerId={currentPlayer?.id}
         quesitos={quesitos}
+        mode={mode}
       />
 
       <div className="game__top">
@@ -129,6 +146,7 @@ export default function GameScreen({ game }) {
           playerPositions={positions}
           reachable={step === 'awaiting-cell' ? reachable : []}
           onCellClick={handleCellClick}
+          renderToken={renderToken}
         />
 
         <div className="game__controls">

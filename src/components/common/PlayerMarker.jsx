@@ -1,16 +1,15 @@
-import { CATEGORIES } from '../../constants/categories.js';
+import QuesitoWheel from './QuesitoWheel.jsx';
 
-// Tarjeta del jugador (esquina del HUD).
-// Muestra nombre, color y los quesitos ganados.
+// Marcador de jugador. Muestra nombre, color y la rueda de quesitos
+// con los huecos rellenos según el progreso del jugador.
 export default function PlayerMarker({
   name,
   color,
   quesitos = [],
+  slots = 6,
   isCurrentTurn = false,
   corner = 'top-left'
 }) {
-  const owned = new Set(quesitos);
-
   return (
     <div
       className={`player-marker corner-${corner} ${isCurrentTurn ? 'is-active' : ''}`}
@@ -19,18 +18,9 @@ export default function PlayerMarker({
       <div className="player-marker__head" style={{ background: color }}>
         <span className="player-marker__name">{name}</span>
       </div>
-      <ul className="player-marker__quesitos">
-        {CATEGORIES.map((cat) => (
-          <li
-            key={cat.id}
-            className={`quesito ${owned.has(cat.id) ? 'is-owned' : ''}`}
-            style={{ background: owned.has(cat.id) ? cat.color : 'transparent', borderColor: cat.color }}
-            title={cat.name}
-          >
-            {owned.has(cat.id) ? cat.icon : ''}
-          </li>
-        ))}
-      </ul>
+      <div className="player-marker__wheel">
+        <QuesitoWheel size={72} slots={slots} earned={quesitos} rimColor={color} />
+      </div>
     </div>
   );
 }

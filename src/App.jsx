@@ -24,6 +24,7 @@ export default function App() {
         winner={winner}
         players={game.players}
         quesitos={game.quesitos}
+        mode={game.mode}
         onPlayAgain={game.resetGame}
       />
     );

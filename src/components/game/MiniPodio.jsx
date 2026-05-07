@@ -1,7 +1,7 @@
-import { CATEGORIES } from '../../constants/categories.js';
+import QuesitoWheel from '../common/QuesitoWheel.jsx';
 
 // Podio simple del ganador y resto de jugadores.
-export default function MiniPodio({ winner, players = [], quesitos = {} }) {
+export default function MiniPodio({ winner, players = [], quesitos = {}, slots = 6 }) {
   const others = players.filter((p) => p.id !== winner?.id);
   return (
     <div className="podio">
@@ -11,29 +11,26 @@ export default function MiniPodio({ winner, players = [], quesitos = {} }) {
           <div className="podio__name" style={{ background: winner.color }}>
             {winner.name}
           </div>
-          <ul className="podio__quesitos">
-            {CATEGORIES.map((c) => {
-              const owned = (quesitos[winner.id] ?? []).includes(c.id);
-              return (
-                <li
-                  key={c.id}
-                  className={owned ? 'is-owned' : ''}
-                  style={{ background: owned ? c.color : 'transparent', borderColor: c.color }}
-                >
-                  {owned ? c.icon : ''}
-                </li>
-              );
-            })}
-          </ul>
+          <div className="podio__wheel">
+            <QuesitoWheel
+              size={120}
+              slots={slots}
+              earned={quesitos[winner.id] ?? []}
+              rimColor={winner.color}
+            />
+          </div>
         </div>
       )}
       <div className="podio__others">
         {others.map((p) => (
           <div key={p.id} className="podio__other" style={{ borderColor: p.color }}>
             <span className="podio__other-name" style={{ background: p.color }}>{p.name}</span>
-            <span className="podio__other-count">
-              {(quesitos[p.id] ?? []).length} quesitos
-            </span>
+            <QuesitoWheel
+              size={56}
+              slots={slots}
+              earned={quesitos[p.id] ?? []}
+              rimColor={p.color}
+            />
           </div>
         ))}
       </div>
