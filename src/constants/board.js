@@ -9,9 +9,9 @@
 
 import { CATEGORY_IDS } from './categories.js';
 
-const RING_SIZE = 72;
+const RING_SIZE = 42;
 const SPOKES = 6;
-const SPOKE_GAP = RING_SIZE / SPOKES; // 12
+const SPOKE_GAP = RING_SIZE / SPOKES; // 7
 
 // Categorías rotando alrededor del anillo
 function categoryForIndex(index) {
