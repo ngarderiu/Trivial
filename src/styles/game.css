@@ -37,36 +37,55 @@
 
 /* Game screen */
 .game {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-4);
   padding: var(--space-4);
-  height: 100vh;
+  min-height: 100vh;
   position: relative;
 }
-.game__center {
-  display: flex;
+.game__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: var(--space-4);
   align-items: center;
-  justify-content: center;
+  justify-items: center;
+  flex: 1;
 }
-.game__side {
+.game__controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
   background: var(--color-card);
   border-radius: var(--radius-md);
   padding: var(--space-4);
   box-shadow: var(--shadow-sm);
+  min-width: 200px;
+}
+.game__bottom {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+}
+.game__turn { font-size: 1.05rem; text-align: center; }
+.game__hint { color: var(--color-muted); font-style: italic; margin: 0; text-align: center; }
+
+/* Área de los 6 stacks de cartas */
+.card-area {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(4px);
+  box-shadow: var(--shadow-sm);
+}
+.card-area__slot {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  overflow-y: auto;
-}
-.game__turn { font-size: 1.1rem; }
-.game__hint { color: var(--color-muted); font-style: italic; margin: 0; }
-
-.card-stacks {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
-  justify-items: center;
+  align-items: center;
 }
 
 /* Tablero SVG */
@@ -87,9 +106,9 @@
   pointer-events: auto;
 }
 .player-marker.corner-top-left     { top: var(--space-3); left: var(--space-3); }
-.player-marker.corner-top-right    { top: var(--space-3); right: 380px; }
+.player-marker.corner-top-right    { top: var(--space-3); right: var(--space-3); }
 .player-marker.corner-bottom-left  { bottom: var(--space-3); left: var(--space-3); }
-.player-marker.corner-bottom-right { bottom: var(--space-3); right: 380px; }
+.player-marker.corner-bottom-right { bottom: var(--space-3); right: var(--space-3); }
 
 /* Victory */
 .victory {

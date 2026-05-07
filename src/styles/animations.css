@@ -26,8 +26,25 @@
   animation: reachable-pulse 1.2s ease-in-out infinite;
 }
 
-@keyframes card-pop {
-  0%   { transform: translateY(8px) scale(0.96); opacity: 0; }
-  100% { transform: translateY(0)    scale(1);    opacity: 1; }
+/* Carta saltando del stack: sube + pequeña rotación + asentamiento */
+@keyframes card-launch {
+  0% {
+    transform: translate(-50%, 80px) rotate(-12deg) scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -16px) rotate(4deg) scale(1.04);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
 }
-.question-card { animation: card-pop 0.25s ease-out; }
+
+/* Flip al revelar respuesta: media voltereta + recompose */
+@keyframes card-flip {
+  0%   { transform: rotateY(0deg); }
+  50%  { transform: rotateY(90deg); }
+  100% { transform: rotateY(0deg); }
+}
