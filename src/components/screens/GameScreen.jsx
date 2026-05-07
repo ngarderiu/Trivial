@@ -156,9 +156,11 @@ export default function GameScreen({ game }) {
           <strong style={{ color: currentPlayer?.color }}>{currentPlayer?.name}</strong>
         </div>
 
-        {step === 'awaiting-dice' && (
-          <Dice onRoll={handleRoll} value={lastDice} />
-        )}
+        <Dice
+          onRoll={handleRoll}
+          value={lastDice}
+          disabled={step !== 'awaiting-dice'}
+        />
         {step === 'awaiting-cell' && (
           <p className="game__hint">Pulsa una casilla resaltada para mover.</p>
         )}
