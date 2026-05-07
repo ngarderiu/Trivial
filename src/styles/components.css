@@ -66,16 +66,31 @@
   border: 3px solid;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  width: 180px;
-  transition: transform 0.15s ease;
+  width: 200px;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    filter var(--transition-base);
+  filter: saturate(0.85);
 }
-.player-marker.is-active { transform: scale(1.05); box-shadow: var(--shadow-md); }
+.player-marker.is-active {
+  transform: scale(1.06);
+  filter: saturate(1.1);
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.85),
+    0 0 24px 6px var(--player-color, var(--color-accent)),
+    var(--shadow-lg);
+  animation: marker-pulse 1.6s ease-in-out infinite;
+}
 .player-marker__head {
   color: #fff;
-  padding: var(--space-2);
-  font-weight: 700;
+  padding: var(--space-2) var(--space-3);
+  font-weight: 800;
   text-align: center;
+  letter-spacing: 0.05em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
 }
+.player-marker__name { font-size: 1.02rem; }
 .player-marker__quesitos {
   list-style: none;
   margin: 0;
@@ -85,14 +100,19 @@
   gap: 4px;
 }
 .player-marker__quesitos .quesito {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: 2px solid;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.85rem;
+  transition: transform var(--transition-base);
+}
+.player-marker__quesitos .quesito.is-owned {
+  transform: scale(1);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.18) inset;
 }
 
 /* Card stack */

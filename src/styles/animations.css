@@ -22,6 +22,31 @@
   0%, 100% { opacity: 0.4; }
   50%      { opacity: 1; }
 }
+
+/* Halo pulsante para el marcador del jugador con turno */
+@keyframes marker-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 4px rgba(255, 255, 255, 0.85),
+      0 0 18px 4px var(--player-color, currentColor),
+      var(--shadow-lg);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px rgba(255, 255, 255, 0.85),
+      0 0 30px 10px var(--player-color, currentColor),
+      var(--shadow-lg);
+  }
+}
+
+/* Transición suave entre pantallas */
+@keyframes screen-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.setup, .game, .victory {
+  animation: screen-fade-in 0.35s ease-out;
+}
 .is-reachable circle[stroke-dasharray] {
   animation: reachable-pulse 1.2s ease-in-out infinite;
 }

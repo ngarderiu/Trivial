@@ -6,8 +6,13 @@
 }
 .setup__title {
   text-align: center;
-  font-size: 2.6rem;
+  font-size: 3rem;
+  font-weight: 800;
   margin: 0 0 var(--space-5);
+  background: linear-gradient(135deg, #1565c0, #ec407a 50%, #fbc02d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .setup__block {
   background: var(--color-card);
@@ -117,7 +122,15 @@
   max-width: 800px;
   margin: 0 auto;
 }
-.victory__title { font-size: 3rem; margin: 0 0 var(--space-5); }
+.victory__title {
+  font-size: 3.4rem;
+  margin: 0 0 var(--space-5);
+  font-weight: 800;
+  background: linear-gradient(135deg, #fbc02d, #e65100 50%, #c62828);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 
 .podio {
   display: flex;

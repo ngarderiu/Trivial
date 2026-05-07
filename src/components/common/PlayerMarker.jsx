@@ -14,7 +14,7 @@ export default function PlayerMarker({
   return (
     <div
       className={`player-marker corner-${corner} ${isCurrentTurn ? 'is-active' : ''}`}
-      style={{ borderColor: color }}
+      style={{ borderColor: color, color, '--player-color': color }}
     >
       <div className="player-marker__head" style={{ background: color }}>
         <span className="player-marker__name">{name}</span>
