@@ -1,40 +1,43 @@
-// Tablero clásico del Trivial: anillo exterior con 42 casillas.
-// 6 sedes (una por categoría) repartidas equiespaciadamente cada 7 casillas.
-// El centro es el espacio donde se decide el ganador.
+// Tablero clásico del Trivial.
 //
-// Cada casilla:
-//   - index: posición en el anillo (0..41)
-//   - category: categoría asignada a esa casilla
-//   - isHQ: true si es sede de esa categoría (donde se gana quesito)
+// Modelo de datos:
+//   - 36 casillas en el anillo exterior: 6 sedes + 30 normales
+//   - sedes en posiciones múltiplos de 6 (0, 6, 12, 18, 24, 30)
+//   - entre cada par de sedes hay exactamente 5 casillas normales
+//   - cada brazo radial dibuja 6 casillas decorativas (no transitables)
+//
+// Visualmente las sedes ocupan el doble de ancho angular que las normales:
+//   42 "unidades angulares" totales = 6 sedes × 2 + 30 normales × 1.
 
 import { CATEGORY_IDS } from './categories.js';
 
-const RING_SIZE = 42;
+const RING_SIZE = 36;
 const SPOKES = 6;
-const SPOKE_GAP = RING_SIZE / SPOKES; // 7
+const SPOKE_GAP = RING_SIZE / SPOKES; // 6
 
-// Categorías rotando alrededor del anillo
-function categoryForIndex(index) {
-  return CATEGORY_IDS[index % CATEGORY_IDS.length];
+// Categoría de una casilla normal: la siguiente en secuencia tras la sede previa
+function categoryForIndex(i) {
+  const sedeBefore = Math.floor(i / SPOKE_GAP); // 0..5
+  const offset = i % SPOKE_GAP;                  // 0=sede, 1..5=normales
+  if (offset === 0) {
+    return CATEGORY_IDS[sedeBefore];
+  }
+  return CATEGORY_IDS[(sedeBefore + offset) % CATEGORY_IDS.length];
 }
 
-// Sedes: una por categoría, en posiciones múltiplos de 7
-function isSedeIndex(index) {
-  return index % SPOKE_GAP === 0;
+function isSedeIndex(i) {
+  return i % SPOKE_GAP === 0;
 }
 
-export const BOARD_POSITIONS = Array.from({ length: RING_SIZE }, (_, i) => {
-  const isHQ = isSedeIndex(i);
-  // Las 6 sedes están en 0, 7, 14, 21, 28, 35 — una por categoría
-  const category = isHQ
-    ? CATEGORY_IDS[i / SPOKE_GAP]
-    : categoryForIndex(i);
-  return { index: i, category, isHQ };
-});
+export const BOARD_POSITIONS = Array.from({ length: RING_SIZE }, (_, i) => ({
+  index: i,
+  category: categoryForIndex(i),
+  isHQ: isSedeIndex(i)
+}));
 
 export const CENTER_INDEX = -1; // valor especial para el centro
 export const RING_LENGTH = RING_SIZE;
-export const SPOKE_CELLS = 6; // casillas por brazo (decorativas, no transitables)
+export const SPOKE_CELLS = 6; // casillas decorativas por brazo
 
 // Dado: 1..6
 export const DICE_MIN = 1;

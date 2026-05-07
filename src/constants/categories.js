@@ -5,7 +5,7 @@ export const CATEGORIES = [
   {
     id: 'geografia',
     name: 'Geografía',
-    color: '#4A90D9',
+    color: '#5B9FD4',
     bgColor: '#bbdefb',
     icon: '🌍',
     categoryKey: 'geografia'
@@ -13,7 +13,7 @@ export const CATEGORIES = [
   {
     id: 'entretenimiento',
     name: 'Entretenimiento',
-    color: '#E91E8C',
+    color: '#E8529A',
     bgColor: '#f8bbd0',
     icon: '🎬',
     categoryKey: 'entretenimiento'
@@ -21,7 +21,7 @@ export const CATEGORIES = [
   {
     id: 'historia',
     name: 'Historia',
-    color: '#F5C518',
+    color: '#F2C94C',
     bgColor: '#fff59d',
     icon: '📜',
     categoryKey: 'historia'
@@ -29,7 +29,7 @@ export const CATEGORIES = [
   {
     id: 'arte',
     name: 'Arte y Literatura',
-    color: '#9B59B6',
+    color: '#9B6FBF',
     bgColor: '#e1bee7',
     icon: '🎨',
     categoryKey: 'arte'
@@ -37,7 +37,7 @@ export const CATEGORIES = [
   {
     id: 'ciencia',
     name: 'Ciencia',
-    color: '#27AE60',
+    color: '#4CAF82',
     bgColor: '#c8e6c9',
     icon: '🔬',
     categoryKey: 'ciencia'
@@ -45,7 +45,7 @@ export const CATEGORIES = [
   {
     id: 'deporte',
     name: 'Deporte',
-    color: '#E67E22',
+    color: '#E8873A',
     bgColor: '#ffe0b2',
     icon: '⚽',
     categoryKey: 'deporte'
