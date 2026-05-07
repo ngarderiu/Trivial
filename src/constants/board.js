@@ -11,14 +11,14 @@
 
 import { CATEGORY_IDS } from './categories.js';
 
-const RING_SIZE = 36;
+const RING_SIZE = 30;
 const SPOKES = 6;
-const SPOKE_GAP = RING_SIZE / SPOKES; // 6
+const SPOKE_GAP = RING_SIZE / SPOKES; // 5
 
 // Categoría de una casilla normal: la siguiente en secuencia tras la sede previa
 function categoryForIndex(i) {
   const sedeBefore = Math.floor(i / SPOKE_GAP); // 0..5
-  const offset = i % SPOKE_GAP;                  // 0=sede, 1..5=normales
+  const offset = i % SPOKE_GAP;                  // 0=sede, 1..4=normales
   if (offset === 0) {
     return CATEGORY_IDS[sedeBefore];
   }

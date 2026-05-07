@@ -3,46 +3,47 @@ import {
   CENTER_INDEX,
   SPOKE_CELLS
 } from '../../constants/board.js';
-import { CATEGORIES, CATEGORIES_BY_ID } from '../../constants/categories.js';
+import { CATEGORIES, CATEGORIES_BY_ID, CATEGORY_IDS } from '../../constants/categories.js';
 
 // Tablero del Trivial clásico.
 //
 // Geometría (viewBox 600×600, centro 300,300):
-//   - radio exterior anillo: 270
-//   - radio interior anillo: 215
-//   - sedes: ancho angular doble (2 unidades), centradas en 0/60/120/180/240/300º
-//   - normales: 5 entre cada par de sedes, en secuencia de los 6 colores
-//   - brazos: 6 brazos rectos, ancho 52 px, 6 casillas de altura 23 px
-//             (radios 75..213) con gap de 3 px entre casillas
-//   - centro: círculo crema, radio 70
+//   - 30 casillas en el anillo: 6 sedes + 24 normales (4 entre sedes)
+//   - sedes: ancho angular doble (2 unidades), centradas en cada eje del brazo
+//   - brazos: 6 brazos rectos de 80 px de ancho, 6 casillas grandes
+//             (radios 92..210) con gap de 4 px entre casillas
+//   - cada casilla del brazo alterna los 6 colores en secuencia
+//   - centro: círculo crema, radio 85
 //
-// Total angular: 6 · 2 + 30 · 1 = 42 "unidades angulares" = 360º
-//   (cada unidad = 360/42 ≈ 8.571º).
+// Total angular: 6 · 2 + 24 · 1 = 36 "unidades angulares" = 360º
+//   (cada unidad = 360/36 = 10º).
 const SIZE = 600;
 const CX = 300;
 const CY = 300;
 const RING_OUTER = 270;
 const RING_INNER = 215;
-const ARM_INNER_R = 75;
-const ARM_OUTER_R = 213;
-const ARM_WIDTH = 52;
+const ARM_INNER_R = 92;
+const ARM_OUTER_R = 210;
+const ARM_WIDTH = 80;
 const ARM_CELLS = SPOKE_CELLS;
-const ARM_CELL_H = (ARM_OUTER_R - ARM_INNER_R) / ARM_CELLS; // 23
-const ARM_CELL_GAP = 3;
-const CENTER_R = 70;
+const ARM_CELL_H = (ARM_OUTER_R - ARM_INNER_R) / ARM_CELLS; // ≈21.67
+const ARM_CELL_GAP = 4;
+const CENTER_R = 85;
+const SPOKE_GAP = 5; // sedes cada 5 posiciones (índices 0,5,10,15,20,25)
 
-const TOTAL_UNITS = 42;
+const TOTAL_UNITS = 36;
 const UNIT_RAD = (Math.PI * 2) / TOTAL_UNITS;
 const DEG = (rad) => (rad * 180) / Math.PI;
 const PAD_RAD = (1.5 * Math.PI) / 180; // 1.5º de gap a cada lado
 
 // Devuelve [a0, a1] (radianes) que ocupa una casilla del anillo.
 // La sede 0 queda centrada en -π/2 (arriba): unidad 1 = -π/2.
+// Cada sección consume 2 + (SPOKE_GAP - 1) = 6 unidades angulares.
 function cellAngles(index) {
   const cell = BOARD_POSITIONS[index];
-  const sedeIdx = Math.floor(index / 6);
-  const offset = index % 6;
-  const sectionStart = sedeIdx * 7; // unidades acumuladas hasta esa sección
+  const sedeIdx = Math.floor(index / SPOKE_GAP);
+  const offset = index % SPOKE_GAP;
+  const sectionStart = sedeIdx * 6; // 2 (sede) + (SPOKE_GAP-1) normales
   let unitStart;
   let unitEnd;
   if (cell.isHQ) {
@@ -78,9 +79,9 @@ function ringCellCenter(index) {
   return { x: CX + r * Math.cos(a), y: CY + r * Math.sin(a), angle: a };
 }
 
-// Brazo j: centrado en el ángulo de la sede j (sede j ↔ index j*6)
+// Brazo j: centrado en el ángulo de la sede j (sede j ↔ index j*SPOKE_GAP)
 function spokeAngleDeg(j) {
-  const sedeIndex = j * 6;
+  const sedeIndex = j * SPOKE_GAP;
   const { angle } = ringCellCenter(sedeIndex);
   return DEG(angle); // grados, listos para SVG rotate
 }
@@ -139,20 +140,19 @@ export default function Board({
         );
       })}
 
-      {/* 6 brazos rectos: cada uno UN solo color (de su sede) */}
+      {/* 6 brazos rectos: cada casilla alterna los 6 colores en secuencia
+          (igual que el anillo exterior). Mismo patrón en los 6 brazos. */}
       {CATEGORIES.map((_, j) => {
-        const sedeIndex = j * 6;
-        const sedeCat = CATEGORIES_BY_ID[BOARD_POSITIONS[sedeIndex].category];
         const angleDeg = spokeAngleDeg(j);
         return (
-          <g key={`spoke-${sedeCat.id}`} transform={`rotate(${angleDeg} ${CX} ${CY})`}>
+          <g key={`spoke-${j}`} transform={`rotate(${angleDeg} ${CX} ${CY})`}>
             {Array.from({ length: ARM_CELLS }).map((_, k) => {
-              // Pre-rotación: brazo apunta hacia +x.
-              // Casilla k ocupa [r0, r1] con un pequeño gap radial.
+              // Pre-rotación: brazo apunta hacia +x. k=0 más cerca del centro.
               const r0 = ARM_INNER_R + k * ARM_CELL_H + ARM_CELL_GAP / 2;
               const r1 = r0 + ARM_CELL_H - ARM_CELL_GAP;
               const x = CX + r0;
               const y = CY - ARM_WIDTH / 2;
+              const cellCat = CATEGORIES_BY_ID[CATEGORY_IDS[k % CATEGORY_IDS.length]];
               return (
                 <rect
                   key={k}
@@ -160,7 +160,7 @@ export default function Board({
                   y={y}
                   width={r1 - r0}
                   height={ARM_WIDTH}
-                  fill={sedeCat.color}
+                  fill={cellCat.color}
                   stroke="#ffffff"
                   strokeWidth={2}
                 />
