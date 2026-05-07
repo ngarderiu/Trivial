@@ -1,7 +1,8 @@
 // Lógica central del juego. Funciones puras.
 
 import { CATEGORY_IDS } from '../constants/categories.js';
-import { GAME_MODES, DICE_MIN, DICE_MAX } from '../constants/gameConfig.js';
+import { GAME_MODES } from '../constants/gameConfig.js';
+import { DICE_MIN, DICE_MAX } from '../constants/board.js';
 
 // Tirada simulada del dado
 export function rollDice() {
