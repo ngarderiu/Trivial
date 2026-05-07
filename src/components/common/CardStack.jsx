@@ -1,4 +1,5 @@
-// Stack visual de cartas de una categoría. Clickeable.
+// Carta vertical en su stack (representación cerrada con icono y nombre).
+// Reutilizable como pieza visual y como botón clickable.
 export default function CardStack({ category, icon, color, label, onClick, disabled = false }) {
   return (
     <button
