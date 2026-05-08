@@ -33,9 +33,9 @@ const SEDE_INNER_FACTOR = 0.92;
 // por SEDE_INNER_FACTOR). Así brazo y sede quedan alineados.
 const ARM_WIDTH = 2 * R_INNER * Math.sin(UNIT_RAD * SEDE_INNER_FACTOR); // ≈ 60 px
 
-// Hexágono central: lado igual a la base interior de la sede.
-// Fórmula: R_HEXAGONO = anchoInteriorSede / √3.
-const R_HEXAGONO = ARM_WIDTH / Math.sqrt(3); // ≈ 34.5
+// Hexágono central: lado igual a la base interior de la sede (× 1.4 para
+// dar al centro más presencia visual).
+const R_HEXAGONO = (ARM_WIDTH / Math.sqrt(3)) * 1.4; // ≈ 48.4
 
 // Brazos: 6 casillas iguales desde R_HEXAGONO+4 hasta R_INNER-4 con gap
 // fijo de 4 px entre ellas. Espacio total y altura por casilla derivados
