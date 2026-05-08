@@ -98,42 +98,43 @@
   background: linear-gradient(180deg, #fff 0%, #f4f1ea 100%);
 }
 
-/* Carta vertical (en columna de stacks) */
+/* Stack de cartas físicas apiladas (efecto 3D) */
 .card-stack {
   position: relative;
-  background: transparent;
-  border: none;
-  cursor: pointer;
   width: 100%;
-  height: 64px;
-  padding: 0;
+  height: 80px;
   transition: transform var(--transition-base);
 }
-.card-stack:hover:not(:disabled) { transform: translateX(-6px); }
-.card-stack.is-disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.4); }
+.card-stack:hover:not(.is-disabled) { transform: translateY(-2px); }
+.card-stack.is-disabled { opacity: 0.5; filter: grayscale(0.4); pointer-events: none; }
+
 .card-stack__sheet {
   position: absolute;
   inset: 0;
-  border-radius: var(--radius-md);
+  border-radius: 8px;
+  border: 2px solid #ffffff;
   background: var(--cat-color, #888);
-  border: 2px solid #fff;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
-.card-stack__sheet--3 { transform: translate(4px, 4px); opacity: 0.55; }
-.card-stack__sheet--2 { transform: translate(2px, 2px); opacity: 0.85; }
-.card-stack__sheet--1 {
+.card-stack__sheet--back  { transform: translate(5px, 6px); opacity: 0.5; }
+.card-stack__sheet--mid   { transform: translate(2px, 3px); opacity: 0.75; }
+.card-stack__sheet--front {
+  cursor: pointer;
+  appearance: none;
+  padding: 0 var(--space-4);
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: flex-start;
   gap: var(--space-3);
-  color: #fff;
+  color: #ffffff;
   font-weight: 700;
   text-align: left;
-  padding: 0 var(--space-3);
+  font: inherit;
+  transition: transform var(--transition-base);
 }
-.card-stack__icon { font-size: 1.8rem; }
-.card-stack__label { font-size: 0.95rem; }
+.card-stack__sheet--front:hover:not(:disabled) { transform: translate(-1px, -1px); }
+.card-stack__sheet--front:disabled { cursor: not-allowed; }
+.card-stack__icon { font-size: 1.9rem; }
+.card-stack__label { font-size: 1rem; letter-spacing: 0.02em; }
 
 /* Carta levantada del stack: overlay centrado con flip 3D */
 .flying-card-backdrop {

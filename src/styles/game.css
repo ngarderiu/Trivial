@@ -89,11 +89,11 @@
 .game__turn { font-size: 1.05rem; }
 .game__hint { color: var(--color-muted); font-style: italic; margin: var(--space-2) 0 0; }
 
-/* Área de cartas: ahora vertical */
+/* Área de cartas: 6 stacks apilados verticalmente, ancho completo */
 .card-area {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 12px;
   padding: var(--space-3);
   background: rgba(13, 34, 56, 0.04);
   border-radius: var(--radius-md);
@@ -101,9 +101,7 @@
 }
 .card-area__slot {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
 }
 
 /* Tablero SVG */
