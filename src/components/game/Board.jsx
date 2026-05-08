@@ -22,7 +22,6 @@ const CX = 300;
 const CY = 300;
 const R_OUTER = 285;
 const R_INNER = 218;
-const HEX_R = 72; // radio del hexágono al vértice
 
 const TOTAL_UNITS = 42;
 const UNIT_RAD = (Math.PI * 2) / TOTAL_UNITS; // 360/42º
@@ -30,19 +29,22 @@ const UNIT_RAD = (Math.PI * 2) / TOTAL_UNITS; // 360/42º
 // Sede trapezoidal: lados rectos. Inner edge estrecha por un factor.
 const SEDE_INNER_FACTOR = 0.92;
 
-// Ancho del brazo = base interior de la sede (cuerda a R_INNER de la sede
-// estrechada por SEDE_INNER_FACTOR). Así brazo y sede quedan alineados.
+// Ancho del brazo = base interior de la sede (cuerda a R_INNER estrechada
+// por SEDE_INNER_FACTOR). Así brazo y sede quedan alineados.
 const ARM_WIDTH = 2 * R_INNER * Math.sin(UNIT_RAD * SEDE_INNER_FACTOR); // ≈ 60 px
 
-// Brazo: empieza justo fuera del lado plano del hexágono (apotema), no del
-// vértice — porque el hexágono está rotado para que sus lados encaren a
-// los brazos.
-const HEX_APOTHEM = HEX_R * Math.cos(Math.PI / 6); // ≈ 62.35
-const SP_IN = HEX_APOTHEM + 6;  // ≈ 68.35
-const SP_OUT = R_INNER - 6;     // 212
-const ARM_CELLS = SPOKE_CELLS;  // 6
+// Hexágono central: lado igual a la base interior de la sede.
+// Fórmula: R_HEXAGONO = anchoInteriorSede / √3.
+const R_HEXAGONO = ARM_WIDTH / Math.sqrt(3); // ≈ 34.5
+
+// Brazos: 6 casillas iguales desde R_HEXAGONO+4 hasta R_INNER-4 con gap
+// fijo de 4 px entre ellas. Espacio total y altura por casilla derivados
+// matemáticamente.
 const ARM_CELL_GAP = 4;
-const ARM_CELL_H = (SP_OUT - SP_IN) / ARM_CELLS; // ≈ 22.33
+const SP_IN = R_HEXAGONO + 4;
+const SP_OUT = R_INNER - 4;
+const ARM_CELLS = SPOKE_CELLS; // 6
+const ARM_CELL_H = (SP_OUT - SP_IN - (ARM_CELLS - 1) * ARM_CELL_GAP) / ARM_CELLS;
 
 const SPOKE_GAP = 6; // sedes cada 6 posiciones (índices 0,6,12,18,24,30)
 const DEG = (rad) => (rad * 180) / Math.PI;
@@ -186,8 +188,9 @@ export default function Board({
           <g key={`spoke-${j}`} transform={`rotate(${angleDeg} ${CX} ${CY})`}>
             {Array.from({ length: ARM_CELLS }).map((_, k) => {
               // Pre-rotación: brazo apunta hacia +x. k=0 más cerca del centro.
-              const r0 = SP_IN + k * ARM_CELL_H + ARM_CELL_GAP / 2;
-              const r1 = r0 + ARM_CELL_H - ARM_CELL_GAP;
+              // Cell k ocupa [SP_IN + k*(h+gap), + h], con gap exacto entre vecinos.
+              const r0 = SP_IN + k * (ARM_CELL_H + ARM_CELL_GAP);
+              const r1 = r0 + ARM_CELL_H;
               const x = CX + r0;
               const y = CY - ARM_WIDTH / 2;
               const cellCat =
@@ -270,7 +273,7 @@ export default function Board({
         style={{ cursor: 'pointer' }}
       >
         <path
-          d={hexagonPath(CX, CY, HEX_R)}
+          d={hexagonPath(CX, CY, R_HEXAGONO)}
           fill="#f5f0e8"
           stroke="#ffffff"
           strokeWidth={4}
