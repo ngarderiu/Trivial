@@ -27,12 +27,18 @@ const HEX_R = 72; // radio del hexágono al vértice
 const TOTAL_UNITS = 42;
 const UNIT_RAD = (Math.PI * 2) / TOTAL_UNITS; // 360/42º
 
-// Ancho del brazo: igual a la cuerda de una sede a R_INNER
-const ARM_WIDTH = 2 * R_INNER * Math.sin(UNIT_RAD); // ≈ 65 px
+// Sede trapezoidal: lados rectos. Inner edge estrecha por un factor.
+const SEDE_INNER_FACTOR = 0.65;
 
-// Brazo: empieza justo fuera del vértice del hexágono y termina justo
-// antes del anillo, con 6 px de margen a cada lado.
-const SP_IN = HEX_R + 6;        // 78
+// Ancho del brazo = base interior de la sede (cuerda a R_INNER de la sede
+// estrechada por SEDE_INNER_FACTOR). Así brazo y sede quedan alineados.
+const ARM_WIDTH = 2 * R_INNER * Math.sin(UNIT_RAD * SEDE_INNER_FACTOR); // ≈ 42 px
+
+// Brazo: empieza justo fuera del lado plano del hexágono (apotema), no del
+// vértice — porque el hexágono está rotado para que sus lados encaren a
+// los brazos.
+const HEX_APOTHEM = HEX_R * Math.cos(Math.PI / 6); // ≈ 62.35
+const SP_IN = HEX_APOTHEM + 6;  // ≈ 68.35
 const SP_OUT = R_INNER - 6;     // 212
 const ARM_CELLS = SPOKE_CELLS;  // 6
 const ARM_CELL_GAP = 4;
@@ -90,11 +96,12 @@ function spokeAngleDeg(j) {
   return DEG(angle);
 }
 
-// Path de un hexágono regular con vértices en los 6 ejes de los brazos.
+// Path de un hexágono regular rotado 30º: los lados planos quedan
+// perpendiculares a los 6 brazos (vértices entre los brazos).
 function hexagonPath(cx, cy, r) {
   const pts = [];
   for (let i = 0; i < 6; i++) {
-    const a = -Math.PI / 2 + i * (Math.PI / 3);
+    const a = -Math.PI / 2 + Math.PI / 6 + i * (Math.PI / 3);
     pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
   }
   return (
@@ -102,6 +109,20 @@ function hexagonPath(cx, cy, r) {
     pts.slice(1).map(([x, y]) => `L ${x} ${y}`).join(' ') +
     ' Z'
   );
+}
+
+// Path de una sede como TRAPEZOIDE de lados rectos: 4 esquinas, sin arcos.
+// Outer edge: cuerda recta de 2 unidades angulares.
+// Inner edge: cuerda recta más estrecha (× SEDE_INNER_FACTOR).
+function sedeTrapezoidPath(angC) {
+  const half = UNIT_RAD; // 1 unidad angular
+  const factor = SEDE_INNER_FACTOR;
+  const xy = (r, a) => [CX + r * Math.cos(a), CY + r * Math.sin(a)];
+  const extL = xy(R_OUTER, angC - half);
+  const extR = xy(R_OUTER, angC + half);
+  const intR = xy(R_INNER, angC + half * factor);
+  const intL = xy(R_INNER, angC - half * factor);
+  return `M ${extL[0]} ${extL[1]} L ${extR[0]} ${extR[1]} L ${intR[0]} ${intR[1]} L ${intL[0]} ${intL[1]} Z`;
 }
 
 export default function Board({
@@ -188,25 +209,25 @@ export default function Board({
         );
       })}
 
-      {/* Sedes encima del resto: doble ancho angular, borde blanco doble */}
+      {/* Sedes encima del resto: trapezoides rectos, borde blanco doble */}
       {BOARD_POSITIONS.filter((c) => c.isHQ).map((cell) => {
         const cat = CATEGORIES_BY_ID[cell.category];
-        const [a0, a1] = cellAngles(cell.index);
         const isReachable = reachableSet.has(cell.index);
-        const center = ringCellCenter(cell.index);
+        const { angle: angC } = ringCellCenter(cell.index);
+        // Centro geométrico aproximado (centroide del trapezoide)
+        const center = {
+          x: CX + ((R_INNER + R_OUTER) / 2) * Math.cos(angC),
+          y: CY + ((R_INNER + R_OUTER) / 2) * Math.sin(angC)
+        };
         return (
           <g key={`hq-${cell.index}`} className={isReachable ? 'is-reachable' : ''}>
-            {/* Borde exterior blanco grueso */}
+            {/* Cuerpo coloreado con borde blanco grueso (doble efecto) */}
             <path
-              d={annularWedgePath(a0, a1, R_INNER - 2, R_OUTER + 2)}
-              fill="#ffffff"
-            />
-            {/* Cuerpo coloreado */}
-            <path
-              d={annularWedgePath(a0, a1, R_INNER, R_OUTER)}
+              d={sedeTrapezoidPath(angC)}
               fill={cat.color}
               stroke="#ffffff"
-              strokeWidth={2}
+              strokeWidth={4}
+              strokeLinejoin="round"
               onClick={() => onCellClick?.(cell.index)}
               style={{ cursor: isReachable ? 'pointer' : 'default' }}
             />
