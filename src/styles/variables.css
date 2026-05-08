@@ -1,5 +1,5 @@
 :root {
-  --color-bg: #f4f1ea;
+  --color-bg: #f5f0e8;
   --color-text: #1f2933;
   --color-muted: #5b6770;
   --color-border: #d6cfc2;
@@ -37,10 +37,7 @@ html, body, #root {
 
 body {
   font-family: var(--font-base);
-  background:
-    radial-gradient(circle at 20% 10%, #fff7e2 0, transparent 40%),
-    radial-gradient(circle at 80% 90%, #e6f0ff 0, transparent 45%),
-    var(--color-bg);
+  background: var(--color-bg);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   letter-spacing: 0.01em;

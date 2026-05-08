@@ -1,9 +1,6 @@
-// Stack de cartas físicas apiladas (efecto 3D). 3 capas:
-//   - fondo (más desplazada, opacidad baja)
-//   - media (desplazamiento intermedio)
-//   - frente (clickable, con icono y nombre)
-//
-// La altura del stack la fija el CSS (.card-stack { height: ... }).
+// Stack de cartas físicas: 3 capas que simulan un mazo apilado.
+// Cada carta es blanca con una franja superior del color de la categoría
+// y el icono + nombre centrados.
 export default function CardStack({
   category,
   icon,
@@ -12,11 +9,6 @@ export default function CardStack({
   onClick,
   disabled = false
 }) {
-  const handleClick = () => {
-    if (disabled) return;
-    onClick?.(category);
-  };
-
   return (
     <div
       className={`card-stack ${disabled ? 'is-disabled' : ''}`}
@@ -24,16 +16,18 @@ export default function CardStack({
       role="group"
       aria-label={`Cartas de ${label}`}
     >
-      <div className="card-stack__sheet card-stack__sheet--back" />
-      <div className="card-stack__sheet card-stack__sheet--mid" />
+      <div className="card-stack__sheet card-stack__sheet--back" aria-hidden="true" />
+      <div className="card-stack__sheet card-stack__sheet--mid" aria-hidden="true" />
       <button
         type="button"
         className="card-stack__sheet card-stack__sheet--front"
-        onClick={handleClick}
+        onClick={() => !disabled && onClick?.(category)}
         disabled={disabled}
       >
-        <span className="card-stack__icon" aria-hidden="true">{icon}</span>
-        <span className="card-stack__label">{label}</span>
+        <span className="card-stack__body">
+          <span className="card-stack__icon" aria-hidden="true">{icon}</span>
+          <span className="card-stack__label">{label}</span>
+        </span>
       </button>
     </div>
   );
