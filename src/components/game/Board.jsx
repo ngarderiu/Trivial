@@ -173,7 +173,7 @@ export default function Board({
             d={annularWedgePath(a0, a1, R_INNER, R_OUTER)}
             fill={cat.color}
             stroke="#ffffff"
-            strokeWidth={2}
+            strokeWidth={1.5}
             strokeLinejoin="round"
             onClick={() => onCellClick?.(cell.index)}
             style={{ cursor: isReachable ? 'pointer' : 'default' }}
@@ -204,7 +204,7 @@ export default function Board({
                   height={ARM_WIDTH}
                   fill={cellCat.color}
                   stroke="#ffffff"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                 />
               );
             })}
@@ -229,7 +229,7 @@ export default function Board({
               d={sedeTrapezoidPath(angC)}
               fill={cat.color}
               stroke="#ffffff"
-              strokeWidth={4}
+              strokeWidth={1.5}
               strokeLinejoin="round"
               onClick={() => onCellClick?.(cell.index)}
               style={{ cursor: isReachable ? 'pointer' : 'default' }}
