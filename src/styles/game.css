@@ -93,6 +93,16 @@
 
 .game__turn { font-size: 1.05rem; }
 .game__hint { color: var(--color-muted); font-style: italic; margin: var(--space-2) 0 0; }
+.game__hint--bonus {
+  color: #2e7d32;
+  font-weight: 700;
+  font-style: normal;
+}
+.game__hint--final {
+  color: #c62828;
+  font-weight: 700;
+  font-style: normal;
+}
 
 /* Área de cartas: grid 2 columnas × 3 filas, gap 12 px.
    Las 6 cartas son verticales (portrait) y caben sin scroll. */

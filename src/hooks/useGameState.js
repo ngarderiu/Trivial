@@ -4,35 +4,35 @@ import { CENTER_INDEX } from '../constants/board.js';
 import {
   advancePosition,
   canEarnQuesito,
-  checkVictory,
+  hasAllQuesitos,
   nextPlayerIndex,
   rollDice
 } from '../utils/index.js';
 
-// Hook central del juego. Encapsula todo el estado y las acciones.
+// Hook central del juego.
 //
 // Estado:
-//   - players: [{ id, name, color }]
-//   - currentPlayerIndex: índice del jugador con turno
-//   - positions: { [playerId]: number }   posición en el anillo (-1 = centro)
-//   - quesitos: { [playerId]: string[] }  ids de categorías ganadas
-//   - usedQuestionIds: Set<string>         para no repetir preguntas
-//   - lastDice: número del último dado (null si no se ha tirado)
-//   - phase: 'setup' | 'playing' | 'victory'
-//   - mode: 'classic' | 'rapid'
-//   - winnerId: ganador final, si hay
+//   - players, currentPlayerIndex, positions, quesitos
+//   - usedQuestionIds: para no repetir preguntas
+//   - lastDice, phase, winnerId, mode
+//   - streaks: { [playerId]: number }  rachas de aciertos consecutivos
+//             SIN ganar quesito (se resetean al ganarlo o al fallar).
+//
+// Importante: la VICTORIA ya no se declara automáticamente al completar
+// los quesitos. El jugador completa, va al centro, y en su próximo turno
+// debe acertar una pregunta final (declareVictory) para ganar.
 export function useGameState() {
   const [mode, setMode] = useState(DEFAULT_MODE);
   const [players, setPlayers] = useState([]);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [positions, setPositions] = useState({});
   const [quesitos, setQuesitos] = useState({});
+  const [streaks, setStreaks] = useState({});
   const [usedQuestionIds, setUsedQuestionIds] = useState(() => new Set());
   const [lastDice, setLastDice] = useState(null);
   const [phase, setPhase] = useState('setup');
   const [winnerId, setWinnerId] = useState(null);
 
-  // Inicia partida con la lista de jugadores y el modo
   const startGame = useCallback((playerNames, modeId = DEFAULT_MODE) => {
     const list = playerNames
       .map((name, i) => ({
@@ -44,33 +44,32 @@ export function useGameState() {
 
     const initialPositions = Object.fromEntries(list.map((p) => [p.id, 0]));
     const initialQuesitos = Object.fromEntries(list.map((p) => [p.id, []]));
+    const initialStreaks = Object.fromEntries(list.map((p) => [p.id, 0]));
 
     setMode(modeId);
     setPlayers(list);
     setCurrentPlayerIndex(0);
     setPositions(initialPositions);
     setQuesitos(initialQuesitos);
+    setStreaks(initialStreaks);
     setUsedQuestionIds(new Set());
     setLastDice(null);
     setWinnerId(null);
     setPhase('playing');
   }, []);
 
-  // Volver a setup
   const resetGame = useCallback(() => {
     setPhase('setup');
     setWinnerId(null);
     setLastDice(null);
   }, []);
 
-  // Tirar dado y guardarlo (no mueve la ficha aún; el jugador elegirá casilla)
   const rollDiceAction = useCallback(() => {
     const value = rollDice();
     setLastDice(value);
     return value;
   }, []);
 
-  // Mover al jugador actual a una posición concreta del anillo
   const moveCurrentPlayerTo = useCallback(
     (newIndex) => {
       const current = players[currentPlayerIndex];
@@ -81,8 +80,6 @@ export function useGameState() {
     [players, currentPlayerIndex]
   );
 
-  // Avance "automático" (elige hacia delante) — útil si solo permitimos
-  // dirección positiva. Mantiene la API simple.
   const moveCurrentPlayerForward = useCallback(
     (steps) => {
       const current = players[currentPlayerIndex];
@@ -94,7 +91,6 @@ export function useGameState() {
     [players, currentPlayerIndex, positions, moveCurrentPlayerTo]
   );
 
-  // Marca una pregunta como usada para que no se repita
   const markQuestionUsed = useCallback((questionId) => {
     if (!questionId) return;
     setUsedQuestionIds((prev) => {
@@ -104,7 +100,9 @@ export function useGameState() {
     });
   }, []);
 
-  // Otorga un quesito al jugador actual si toca y procede
+  // Otorga un quesito (si procede) y resetea la racha del jugador actual.
+  // NO declara victoria automáticamente: ahora la victoria requiere acertar
+  // la pregunta final en el centro.
   const grantQuesitoToCurrent = useCallback(
     (categoryId) => {
       const current = players[currentPlayerIndex];
@@ -112,26 +110,40 @@ export function useGameState() {
       const owned = quesitos[current.id] ?? [];
       if (!canEarnQuesito(owned, categoryId, mode)) return false;
 
-      const updated = { ...quesitos, [current.id]: [...owned, categoryId] };
-      setQuesitos(updated);
-
-      const winner = checkVictory(updated, mode);
-      if (winner) {
-        setWinnerId(winner);
-        setPhase('victory');
-      }
+      setQuesitos((prev) => ({ ...prev, [current.id]: [...owned, categoryId] }));
+      setStreaks((prev) => ({ ...prev, [current.id]: 0 }));
       return true;
     },
     [players, currentPlayerIndex, quesitos, mode]
   );
 
-  // Pasa el turno al siguiente jugador
+  const incrementStreak = useCallback((playerId) => {
+    if (!playerId) return;
+    setStreaks((prev) => ({ ...prev, [playerId]: (prev[playerId] ?? 0) + 1 }));
+  }, []);
+
+  const resetStreak = useCallback((playerId) => {
+    if (!playerId) return;
+    setStreaks((prev) => ({ ...prev, [playerId]: 0 }));
+  }, []);
+
+  const declareVictory = useCallback((playerId) => {
+    if (!playerId) return;
+    setWinnerId(playerId);
+    setPhase('victory');
+  }, []);
+
+  // ¿Tiene este jugador ya todos los quesitos (candidato a victoria)?
+  const isWinnerCandidate = useCallback(
+    (playerId) => hasAllQuesitos(quesitos[playerId] ?? [], mode),
+    [quesitos, mode]
+  );
+
   const passTurn = useCallback(() => {
     setCurrentPlayerIndex((idx) => nextPlayerIndex(idx, players.length));
     setLastDice(null);
   }, [players.length]);
 
-  // Mover al jugador actual al centro (cuando ya tiene los quesitos)
   const moveCurrentPlayerToCenter = useCallback(() => {
     const current = players[currentPlayerIndex];
     if (!current) return;
@@ -151,6 +163,7 @@ export function useGameState() {
     currentPlayerIndex,
     positions,
     quesitos,
+    streaks,
     usedQuestionIds,
     lastDice,
     phase,
@@ -164,6 +177,10 @@ export function useGameState() {
     moveCurrentPlayerToCenter,
     markQuestionUsed,
     grantQuesitoToCurrent,
+    incrementStreak,
+    resetStreak,
+    declareVictory,
+    isWinnerCandidate,
     passTurn,
     setMode
   };

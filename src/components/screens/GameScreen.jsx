@@ -1,35 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Board from '../game/Board.jsx';
 import GameHUD from '../game/GameHUD.jsx';
 import CardStackArea from '../game/CardStackArea.jsx';
 import Dice from '../common/Dice.jsx';
 import QuesitoWheel from '../common/QuesitoWheel.jsx';
-import { CENTER_INDEX } from '../../constants/board.js';
+import { CENTER_INDEX, BOARD_POSITIONS } from '../../constants/board.js';
+import { CATEGORY_IDS } from '../../constants/categories.js';
 import { GAME_MODES } from '../../constants/gameConfig.js';
 import { useBoard } from '../../hooks/useBoard.js';
 import { useQuestion } from '../../hooks/useQuestion.js';
 import {
+  canEarnQuesito,
   getCategoryAtPosition,
   isSedePosition,
   missingCategories
 } from '../../utils/index.js';
 
 // Pantalla principal del juego.
-// Layout:
-//   - izquierda: tablero (65%)
-//   - derecha:   dado arriba, cartas verticales en medio, info turno abajo
 //
-// Subfases internas:
-//   - 'awaiting-dice'    : esperando que el jugador tire el dado
-//   - 'awaiting-cell'    : se ha tirado, hay que elegir casilla
-//   - 'awaiting-category': el jugador está en el centro y elige categoría
-//   - 'awaiting-question': hay una pregunta activa
+// Subfases internas (step):
+//   - 'awaiting-dice'           : tirar dado (jugador en anillo)
+//   - 'awaiting-cell'           : elegir casilla tras tirar
+//   - 'awaiting-question'       : pregunta tras movimiento normal
+//   - 'awaiting-bonus-sede'     : racha de 3 → elegir sede para bonus
+//   - 'awaiting-final-question' : jugador en el centro con todos los
+//                                 quesitos; pregunta aleatoria final
+const STREAK_TRIGGER = 3;
+
 export default function GameScreen({ game }) {
   const {
     players,
     currentPlayer,
     positions,
     quesitos,
+    streaks,
     usedQuestionIds,
     lastDice,
     rollDiceAction,
@@ -37,6 +41,10 @@ export default function GameScreen({ game }) {
     moveCurrentPlayerToCenter,
     markQuestionUsed,
     grantQuesitoToCurrent,
+    incrementStreak,
+    resetStreak,
+    declareVictory,
+    isWinnerCandidate,
     passTurn,
     mode
   } = game;
@@ -46,16 +54,25 @@ export default function GameScreen({ game }) {
   const { reachable } = useBoard(currentPos, lastDice);
   const question = useQuestion();
 
-  const [step, setStep] = useState(isAtCenter ? 'awaiting-category' : 'awaiting-dice');
+  const [step, setStep] = useState('awaiting-dice');
 
-  const ensureStepForCurrent = () => {
-    if (isAtCenter && step !== 'awaiting-category' && step !== 'awaiting-question') {
-      setStep('awaiting-category');
-    } else if (!isAtCenter && step === 'awaiting-category') {
+  const modeDef = GAME_MODES[mode.toUpperCase()] ?? GAME_MODES.CLASSIC;
+  const slots = modeDef.quesitosToWin;
+
+  // Si el jugador actual está en el centro y le toca → pregunta final
+  // automática (categoría aleatoria).
+  useEffect(() => {
+    if (!currentPlayer) return;
+    if (isAtCenter && !question.activeQuestion && step !== 'awaiting-final-question') {
+      const randomCat = CATEGORY_IDS[Math.floor(Math.random() * CATEGORY_IDS.length)];
+      const q = question.draw(randomCat, usedQuestionIds);
+      if (q) markQuestionUsed(q.id);
+      setStep('awaiting-final-question');
+    } else if (!isAtCenter && step === 'awaiting-final-question') {
       setStep('awaiting-dice');
     }
-  };
-  ensureStepForCurrent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPlayer?.id, isAtCenter]);
 
   const handleRoll = () => {
     rollDiceAction();
@@ -76,10 +93,18 @@ export default function GameScreen({ game }) {
     }
   };
 
-  const handleCategoryStack = (catId) => {
-    if (step !== 'awaiting-category') return;
-    const missing = missingCategories(quesitos[currentPlayer?.id] ?? []);
-    if (!missing.includes(catId)) return;
+  // Selección de sede al activarse la racha bonus
+  const handleBonusSedePick = (catId) => {
+    if (step !== 'awaiting-bonus-sede') return;
+    const playerId = currentPlayer?.id;
+    const owned = quesitos[playerId] ?? [];
+    if (owned.includes(catId)) return;
+
+    const sedeIndex = BOARD_POSITIONS.findIndex(
+      (c) => c.isHQ && c.category === catId
+    );
+    if (sedeIndex < 0) return;
+    moveCurrentPlayerTo(sedeIndex);
     const q = question.draw(catId, usedQuestionIds);
     if (q) markQuestionUsed(q.id);
     setStep('awaiting-question');
@@ -87,41 +112,54 @@ export default function GameScreen({ game }) {
 
   const handleCorrect = () => {
     const cat = question.activeCategory;
+    const playerId = currentPlayer?.id;
     question.clear();
 
-    if (isAtCenter) {
-      grantQuesitoToCurrent(cat);
-      setStep('awaiting-category');
+    // 1) Pregunta final en el centro → victoria
+    if (step === 'awaiting-final-question') {
+      declareVictory(playerId);
       return;
     }
 
-    if (isSedePosition(currentPos)) {
-      grantQuesitoToCurrent(cat);
+    const owned = quesitos[playerId] ?? [];
+    const onSede = isSedePosition(currentPos);
+
+    // 2) Sede en la que SÍ se puede ganar quesito
+    if (onSede && canEarnQuesito(owned, cat, mode)) {
+      grantQuesitoToCurrent(cat); // resetea racha
+      // ¿Le da todos los quesitos? → al centro y pasa turno
+      const willHaveAll = new Set([...owned, cat]).size >= modeDef.quesitosToWin;
+      if (willHaveAll) {
+        moveCurrentPlayerToCenter();
+        passTurn();
+        setStep('awaiting-dice');
+        return;
+      }
+      setStep('awaiting-dice');
+      return;
     }
 
-    const owned = quesitos[currentPlayer?.id] ?? [];
-    const willHaveAll = new Set([...owned, cat]).size >= (mode === 'rapid' ? 4 : 6);
-    if (willHaveAll && isSedePosition(currentPos)) {
-      moveCurrentPlayerToCenter();
-      setStep('awaiting-category');
+    // 3) Acierto sin quesito (casilla normal o sede ya conseguida)
+    const newStreak = (streaks[playerId] ?? 0) + 1;
+    incrementStreak(playerId);
+    if (newStreak >= STREAK_TRIGGER) {
+      setStep('awaiting-bonus-sede');
       return;
     }
     setStep('awaiting-dice');
   };
 
   const handleWrong = () => {
+    const playerId = currentPlayer?.id;
     question.clear();
+    resetStreak(playerId);
     passTurn();
     setStep('awaiting-dice');
   };
 
-  const owned = quesitos[currentPlayer?.id] ?? [];
-  const stacksClickable = step === 'awaiting-category'
-    ? missingCategories(owned)
-    : [];
-
-  const modeDef = GAME_MODES[mode.toUpperCase()] ?? GAME_MODES.CLASSIC;
-  const slots = modeDef.quesitosToWin;
+  const ownedCurrent = quesitos[currentPlayer?.id] ?? [];
+  const stacksClickable =
+    step === 'awaiting-bonus-sede' ? missingCategories(ownedCurrent) : [];
 
   const renderToken = (player) => (
     <QuesitoWheel
@@ -133,6 +171,14 @@ export default function GameScreen({ game }) {
     />
   );
 
+  // Lista de jugadores con flag "esperando ronda final"
+  const waitingPlayers = players.reduce((acc, p) => {
+    acc[p.id] = positions[p.id] === CENTER_INDEX && isWinnerCandidate(p.id);
+    return acc;
+  }, {});
+
+  const currentStreak = streaks[currentPlayer?.id] ?? 0;
+
   return (
     <main className="game">
       <section className="game__board">
@@ -141,6 +187,7 @@ export default function GameScreen({ game }) {
           currentPlayerId={currentPlayer?.id}
           quesitos={quesitos}
           mode={mode}
+          waitingPlayers={waitingPlayers}
         />
         <div className="game__board-dice">
           <Dice
@@ -162,7 +209,7 @@ export default function GameScreen({ game }) {
         <div className="game__panel-block game__panel-block--cards">
           <CardStackArea
             clickableCategories={stacksClickable}
-            onPickCategory={handleCategoryStack}
+            onPickCategory={handleBonusSedePick}
             activeCategory={question.activeCategory}
             question={question.activeQuestion}
             revealed={question.revealed}
@@ -180,11 +227,22 @@ export default function GameScreen({ game }) {
           {step === 'awaiting-cell' && (
             <p className="game__hint">Elige una casilla resaltada.</p>
           )}
-          {step === 'awaiting-category' && (
-            <p className="game__hint">Estás en el centro: elige una categoría.</p>
+          {step === 'awaiting-bonus-sede' && (
+            <p className="game__hint game__hint--bonus">
+              ¡Racha de {STREAK_TRIGGER}! Elige una sede para ir directamente.
+            </p>
           )}
-          {step === 'awaiting-dice' && (
-            <p className="game__hint">¡Tira el dado!</p>
+          {step === 'awaiting-final-question' && (
+            <p className="game__hint game__hint--final">
+              ¡Pregunta final! Acierta para ganar la partida.
+            </p>
+          )}
+          {step === 'awaiting-dice' && !isAtCenter && (
+            <p className="game__hint">
+              {currentStreak > 0
+                ? `¡Racha ${currentStreak}/${STREAK_TRIGGER}! Tira el dado.`
+                : '¡Tira el dado!'}
+            </p>
           )}
         </div>
       </aside>
