@@ -8,42 +8,47 @@ import { CATEGORIES, CATEGORIES_BY_ID, CATEGORY_IDS } from '../../constants/cate
 // Tablero del Trivial clásico.
 //
 // Geometría (viewBox 600×600, centro 300,300):
-//   - 30 casillas en el anillo: 6 sedes + 24 normales (4 entre sedes)
-//   - sedes: ancho angular doble (2 unidades), centradas en cada eje del brazo
-//   - brazos: 6 brazos rectos de 80 px de ancho, 6 casillas grandes
-//             (radios 92..210) con gap de 4 px entre casillas
-//   - cada casilla del brazo alterna los 6 colores en secuencia
-//   - centro: círculo crema, radio 85
-//
-// Total angular: 6 · 2 + 24 · 1 = 36 "unidades angulares" = 360º
-//   (cada unidad = 360/36 = 10º).
+//   - 36 casillas en el anillo: 6 sedes + 30 normales (5 entre cada par de sedes)
+//   - sede = 2 unidades angulares; normal = 1 unidad → 6·2 + 30·1 = 42 unidades
+//     → 360º/42 ≈ 8.571º por unidad.
+//   - anillo: R_INNER=218, R_OUTER=285
+//   - centro: hexágono regular (vértices en los 6 ejes de los brazos),
+//     radio (al vértice) 72 px.
+//   - brazos: ancho EXACTO igual al ancho de una sede a R_INNER
+//     (≈ 2·sin(8.571º)·R_INNER ≈ 65 px).
+//   - 6 casillas por brazo entre SP_IN y SP_OUT, gap radial 4 px.
 const SIZE = 600;
 const CX = 300;
 const CY = 300;
-const RING_OUTER = 270;
-const RING_INNER = 215;
-const ARM_INNER_R = 92;
-const ARM_OUTER_R = 210;
-const ARM_WIDTH = 80;
-const ARM_CELLS = SPOKE_CELLS;
-const ARM_CELL_H = (ARM_OUTER_R - ARM_INNER_R) / ARM_CELLS; // ≈21.67
-const ARM_CELL_GAP = 4;
-const CENTER_R = 85;
-const SPOKE_GAP = 5; // sedes cada 5 posiciones (índices 0,5,10,15,20,25)
+const R_OUTER = 285;
+const R_INNER = 218;
+const HEX_R = 72; // radio del hexágono al vértice
 
-const TOTAL_UNITS = 36;
-const UNIT_RAD = (Math.PI * 2) / TOTAL_UNITS;
+const TOTAL_UNITS = 42;
+const UNIT_RAD = (Math.PI * 2) / TOTAL_UNITS; // 360/42º
+
+// Ancho del brazo: igual a la cuerda de una sede a R_INNER
+const ARM_WIDTH = 2 * R_INNER * Math.sin(UNIT_RAD); // ≈ 65 px
+
+// Brazo: empieza justo fuera del vértice del hexágono y termina justo
+// antes del anillo, con 6 px de margen a cada lado.
+const SP_IN = HEX_R + 6;        // 78
+const SP_OUT = R_INNER - 6;     // 212
+const ARM_CELLS = SPOKE_CELLS;  // 6
+const ARM_CELL_GAP = 4;
+const ARM_CELL_H = (SP_OUT - SP_IN) / ARM_CELLS; // ≈ 22.33
+
+const SPOKE_GAP = 6; // sedes cada 6 posiciones (índices 0,6,12,18,24,30)
 const DEG = (rad) => (rad * 180) / Math.PI;
 const PAD_RAD = (1.5 * Math.PI) / 180; // 1.5º de gap a cada lado
 
 // Devuelve [a0, a1] (radianes) que ocupa una casilla del anillo.
-// La sede 0 queda centrada en -π/2 (arriba): unidad 1 = -π/2.
-// Cada sección consume 2 + (SPOKE_GAP - 1) = 6 unidades angulares.
+// Sede 0 centrada en -π/2 (arriba). Cada sección = 2 (sede) + 5 normales = 7 unidades.
 function cellAngles(index) {
   const cell = BOARD_POSITIONS[index];
   const sedeIdx = Math.floor(index / SPOKE_GAP);
   const offset = index % SPOKE_GAP;
-  const sectionStart = sedeIdx * 6; // 2 (sede) + (SPOKE_GAP-1) normales
+  const sectionStart = sedeIdx * 7;
   let unitStart;
   let unitEnd;
   if (cell.isHQ) {
@@ -53,7 +58,6 @@ function cellAngles(index) {
     unitStart = sectionStart + 2 + (offset - 1);
     unitEnd = unitStart + 1;
   }
-  // Desplazamiento para que sede 0 esté centrada arriba
   const a0 = (unitStart - 1) * UNIT_RAD - Math.PI / 2 + PAD_RAD;
   const a1 = (unitEnd - 1) * UNIT_RAD - Math.PI / 2 - PAD_RAD;
   return [a0, a1];
@@ -75,7 +79,7 @@ function annularWedgePath(a0, a1, r0, r1) {
 function ringCellCenter(index) {
   const [a0, a1] = cellAngles(index);
   const a = (a0 + a1) / 2;
-  const r = (RING_INNER + RING_OUTER) / 2;
+  const r = (R_INNER + R_OUTER) / 2;
   return { x: CX + r * Math.cos(a), y: CY + r * Math.sin(a), angle: a };
 }
 
@@ -83,7 +87,21 @@ function ringCellCenter(index) {
 function spokeAngleDeg(j) {
   const sedeIndex = j * SPOKE_GAP;
   const { angle } = ringCellCenter(sedeIndex);
-  return DEG(angle); // grados, listos para SVG rotate
+  return DEG(angle);
+}
+
+// Path de un hexágono regular con vértices en los 6 ejes de los brazos.
+function hexagonPath(cx, cy, r) {
+  const pts = [];
+  for (let i = 0; i < 6; i++) {
+    const a = -Math.PI / 2 + i * (Math.PI / 3);
+    pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
+  }
+  return (
+    `M ${pts[0][0]} ${pts[0][1]} ` +
+    pts.slice(1).map(([x, y]) => `L ${x} ${y}`).join(' ') +
+    ' Z'
+  );
 }
 
 export default function Board({
@@ -129,7 +147,7 @@ export default function Board({
         return (
           <path
             key={cell.index}
-            d={annularWedgePath(a0, a1, RING_INNER, RING_OUTER)}
+            d={annularWedgePath(a0, a1, R_INNER, R_OUTER)}
             fill={cat.color}
             stroke="#ffffff"
             strokeWidth={2}
@@ -140,19 +158,19 @@ export default function Board({
         );
       })}
 
-      {/* 6 brazos rectos: cada casilla alterna los 6 colores en secuencia
-          (igual que el anillo exterior). Mismo patrón en los 6 brazos. */}
+      {/* 6 brazos rectos: cada casilla alterna los 6 colores en secuencia */}
       {CATEGORIES.map((_, j) => {
         const angleDeg = spokeAngleDeg(j);
         return (
           <g key={`spoke-${j}`} transform={`rotate(${angleDeg} ${CX} ${CY})`}>
             {Array.from({ length: ARM_CELLS }).map((_, k) => {
               // Pre-rotación: brazo apunta hacia +x. k=0 más cerca del centro.
-              const r0 = ARM_INNER_R + k * ARM_CELL_H + ARM_CELL_GAP / 2;
+              const r0 = SP_IN + k * ARM_CELL_H + ARM_CELL_GAP / 2;
               const r1 = r0 + ARM_CELL_H - ARM_CELL_GAP;
               const x = CX + r0;
               const y = CY - ARM_WIDTH / 2;
-              const cellCat = CATEGORIES_BY_ID[CATEGORY_IDS[k % CATEGORY_IDS.length]];
+              const cellCat =
+                CATEGORIES_BY_ID[CATEGORY_IDS[k % CATEGORY_IDS.length]];
               return (
                 <rect
                   key={k}
@@ -170,8 +188,7 @@ export default function Board({
         );
       })}
 
-      {/* Sedes (encima del resto): mismo color, doble ancho angular,
-          borde blanco doble */}
+      {/* Sedes encima del resto: doble ancho angular, borde blanco doble */}
       {BOARD_POSITIONS.filter((c) => c.isHQ).map((cell) => {
         const cat = CATEGORIES_BY_ID[cell.category];
         const [a0, a1] = cellAngles(cell.index);
@@ -181,19 +198,18 @@ export default function Board({
           <g key={`hq-${cell.index}`} className={isReachable ? 'is-reachable' : ''}>
             {/* Borde exterior blanco grueso */}
             <path
-              d={annularWedgePath(a0, a1, RING_INNER - 2, RING_OUTER + 2)}
+              d={annularWedgePath(a0, a1, R_INNER - 2, R_OUTER + 2)}
               fill="#ffffff"
             />
             {/* Cuerpo coloreado */}
             <path
-              d={annularWedgePath(a0, a1, RING_INNER, RING_OUTER)}
+              d={annularWedgePath(a0, a1, R_INNER, R_OUTER)}
               fill={cat.color}
               stroke="#ffffff"
               strokeWidth={2}
               onClick={() => onCellClick?.(cell.index)}
               style={{ cursor: isReachable ? 'pointer' : 'default' }}
             />
-            {/* Icono de la categoría */}
             <text
               x={center.x}
               y={center.y + 7}
@@ -207,7 +223,7 @@ export default function Board({
         );
       })}
 
-      {/* Casillas alcanzables resaltadas */}
+      {/* Casillas alcanzables */}
       {Array.from(reachableSet).map((idx) => {
         const c = ringCellCenter(idx);
         return (
@@ -226,19 +242,18 @@ export default function Board({
         );
       })}
 
-      {/* Centro: círculo crema */}
+      {/* Centro: hexágono regular */}
       <g
         className="board__center"
         onClick={() => onCellClick?.(CENTER_INDEX)}
         style={{ cursor: 'pointer' }}
       >
-        <circle
-          cx={CX}
-          cy={CY}
-          r={CENTER_R}
+        <path
+          d={hexagonPath(CX, CY, HEX_R)}
           fill="#f5f0e8"
           stroke="#ffffff"
           strokeWidth={4}
+          strokeLinejoin="round"
         />
       </g>
 
