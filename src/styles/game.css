@@ -122,9 +122,9 @@
   pointer-events: auto;
 }
 .player-marker.corner-top-left     { top: var(--space-3);    left: var(--space-3); }
-.player-marker.corner-bottom-left  { top: 230px;             left: var(--space-3); }
 .player-marker.corner-top-right    { top: var(--space-3);    right: var(--space-3); }
-.player-marker.corner-bottom-right { top: 230px;             right: var(--space-3); }
+.player-marker.corner-bottom-left  { bottom: var(--space-3); left: var(--space-3); }
+.player-marker.corner-bottom-right { bottom: var(--space-3); right: var(--space-3); }
 
 /* Victory */
 .victory {
