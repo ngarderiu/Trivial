@@ -28,11 +28,11 @@ const TOTAL_UNITS = 42;
 const UNIT_RAD = (Math.PI * 2) / TOTAL_UNITS; // 360/42º
 
 // Sede trapezoidal: lados rectos. Inner edge estrecha por un factor.
-const SEDE_INNER_FACTOR = 0.65;
+const SEDE_INNER_FACTOR = 0.85;
 
 // Ancho del brazo = base interior de la sede (cuerda a R_INNER de la sede
 // estrechada por SEDE_INNER_FACTOR). Así brazo y sede quedan alineados.
-const ARM_WIDTH = 2 * R_INNER * Math.sin(UNIT_RAD * SEDE_INNER_FACTOR); // ≈ 42 px
+const ARM_WIDTH = 2 * R_INNER * Math.sin(UNIT_RAD * SEDE_INNER_FACTOR); // ≈ 55 px
 
 // Brazo: empieza justo fuera del lado plano del hexágono (apotema), no del
 // vértice — porque el hexágono está rotado para que sus lados encaren a
