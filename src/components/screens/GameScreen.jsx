@@ -142,6 +142,13 @@ export default function GameScreen({ game }) {
           quesitos={quesitos}
           mode={mode}
         />
+        <div className="game__board-dice">
+          <Dice
+            onRoll={handleRoll}
+            value={lastDice}
+            disabled={step !== 'awaiting-dice'}
+          />
+        </div>
         <Board
           players={players}
           playerPositions={positions}
@@ -152,14 +159,6 @@ export default function GameScreen({ game }) {
       </section>
 
       <aside className="game__panel">
-        <div className="game__panel-block game__panel-block--dice">
-          <Dice
-            onRoll={handleRoll}
-            value={lastDice}
-            disabled={step !== 'awaiting-dice'}
-          />
-        </div>
-
         <div className="game__panel-block game__panel-block--cards">
           <CardStackArea
             clickableCategories={stacksClickable}
