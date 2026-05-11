@@ -31,6 +31,22 @@ export default function FlyingCard({
               <span className="flying-card__label">{label}</span>
             </header>
             <div className="flying-card__body">
+              {question.image && (
+                <img
+                  src={question.image}
+                  alt=""
+                  style={{
+                    display: 'block',
+                    maxHeight: '200px',
+                    maxWidth: '100%',
+                    width: 'auto',
+                    objectFit: 'contain',
+                    borderRadius: '8px',
+                    margin: '0 auto 12px'
+                  }}
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
               <p className="flying-card__text">{question.question}</p>
             </div>
             <footer className="flying-card__foot">
@@ -47,6 +63,22 @@ export default function FlyingCard({
               <span className="flying-card__label">{label}</span>
             </header>
             <div className="flying-card__body">
+              {question.image && (
+                <img
+                  src={question.image}
+                  alt=""
+                  style={{
+                    display: 'block',
+                    maxHeight: '200px',
+                    maxWidth: '100%',
+                    width: 'auto',
+                    objectFit: 'contain',
+                    borderRadius: '8px',
+                    margin: '0 auto 12px'
+                  }}
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
               <span className="flying-card__answer-tag">RESPUESTA</span>
               <p className="flying-card__text">{question.answer}</p>
             </div>
