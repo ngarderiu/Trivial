@@ -20,6 +20,7 @@ export default function FlyingCard({
   onWrong
 }) {
   if (!question) return null;
+  console.log('question.image:', question.image);
   return (
     <div className="flying-card-backdrop">
       <div className="flying-card" style={{ '--cat-color': color }}>
