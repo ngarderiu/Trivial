@@ -1,11 +1,5 @@
 import { CATEGORIES_BY_ID } from '../../constants/categories.js';
 
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return null;
-  const filename = imagePath.split('/').pop();
-  return new URL(`../../assets/questions/${filename}`, import.meta.url).href;
-};
-
 // Muestra una pregunta. Si no está revelada solo se ve enunciado y
 // botón Revelar; tras revelar, aparece la respuesta y los botones tick/cruz.
 export default function QuestionCard({
@@ -36,7 +30,7 @@ export default function QuestionCard({
         {question.image && (
           <img
             className="question-card__image"
-            src={getImageUrl(question.image)}
+            src={question.image}
             alt="pregunta"
             style={{
               display: 'block',
