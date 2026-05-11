@@ -1,5 +1,10 @@
 import { CATEGORIES_BY_ID } from '../../constants/categories.js';
-import { resolveImage } from '../../utils/questionUtils.js';
+
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return null;
+  const filename = imagePath.split('/').pop();
+  return new URL(`../../assets/questions/${filename}`, import.meta.url).href;
+};
 
 // Muestra una pregunta. Si no está revelada solo se ve enunciado y
 // botón Revelar; tras revelar, aparece la respuesta y los botones tick/cruz.
@@ -28,11 +33,11 @@ export default function QuestionCard({
       </header>
 
       <div className="question-card__body">
-        {question.image && resolveImage(question.image) && (
+        {question.image && (
           <img
             className="question-card__image"
-            src={resolveImage(question.image)}
-            alt=""
+            src={getImageUrl(question.image)}
+            alt="pregunta"
             style={{
               display: 'block',
               maxHeight: '200px',
@@ -42,6 +47,7 @@ export default function QuestionCard({
               borderRadius: '8px',
               margin: '0 auto 12px'
             }}
+            onError={(e) => { e.target.style.display = 'none'; }}
           />
         )}
         <p className="question-card__question">{question.question}</p>

@@ -7,18 +7,6 @@ import musica from '../data/questions/musica.json';
 import ciencia from '../data/questions/ciencia.json';
 import deporte from '../data/questions/deporte.json';
 
-// Imágenes de preguntas: Vite las empaqueta y devuelve URLs válidas en dev y prod.
-const images = import.meta.glob(
-  '/src/assets/questions/*.{jpg,jpeg,png,webp}',
-  { eager: true }
-);
-
-export function resolveImage(imagePath) {
-  if (!imagePath) return null;
-  const key = imagePath.startsWith('/') ? imagePath : '/' + imagePath;
-  return images[key]?.default ?? null;
-}
-
 // Diccionario categoryId → banco de preguntas
 const BANKS = {
   geografia,
