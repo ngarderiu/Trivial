@@ -1,19 +1,5 @@
 import { CATEGORIES_BY_ID } from '../../constants/categories.js';
-
-// Carga eager de las imágenes de preguntas para que Vite las empaquete
-// y devuelva URLs válidas tanto en dev como en producción.
-const QUESTION_IMAGES = import.meta.glob('../../assets/questions/*', {
-  eager: true,
-  query: '?url',
-  import: 'default'
-});
-
-function resolveImage(path) {
-  if (!path) return null;
-  const file = path.split('/').pop();
-  const match = Object.entries(QUESTION_IMAGES).find(([key]) => key.endsWith('/' + file));
-  return match ? match[1] : null;
-}
+import { resolveImage } from '../../utils/questionUtils.js';
 
 // Muestra una pregunta. Si no está revelada solo se ve enunciado y
 // botón Revelar; tras revelar, aparece la respuesta y los botones tick/cruz.
