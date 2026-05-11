@@ -1,18 +1,18 @@
 // Funciones puras de preguntas. Lectura de JSON y selección aleatoria.
 
 import geografia from '../data/questions/geografia.json';
-import entretenimiento from '../data/questions/entretenimiento.json';
+import cine_series from '../data/questions/cine_series.json';
 import historia from '../data/questions/historia.json';
-import arte from '../data/questions/arte.json';
+import musica from '../data/questions/musica.json';
 import ciencia from '../data/questions/ciencia.json';
 import deporte from '../data/questions/deporte.json';
 
 // Diccionario categoryId → banco de preguntas
 const BANKS = {
   geografia,
-  entretenimiento,
+  cine_series,
   historia,
-  arte,
+  musica,
   ciencia,
   deporte
 };

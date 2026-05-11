@@ -1,8 +1,8 @@
 {
-  "category": "arte",
-  "categoryLabel": "Arte y Literatura",
-  "icon": "🎨",
-  "color": "#6a1b9a",
+  "category": "musica",
+  "categoryLabel": "Música",
+  "icon": "🎵",
+  "color": "#9b59b6",
   "totalQuestions": 150,
   "questions": [
     { "id": "art_001", "question": "¿Quién pintó 'La Mona Lisa'?", "answer": "Leonardo da Vinci", "difficulty": "easy" },

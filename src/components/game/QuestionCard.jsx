@@ -1,5 +1,20 @@
 import { CATEGORIES_BY_ID } from '../../constants/categories.js';
 
+// Carga eager de las imágenes de preguntas para que Vite las empaquete
+// y devuelva URLs válidas tanto en dev como en producción.
+const QUESTION_IMAGES = import.meta.glob('../../assets/questions/*', {
+  eager: true,
+  query: '?url',
+  import: 'default'
+});
+
+function resolveImage(path) {
+  if (!path) return null;
+  const file = path.split('/').pop();
+  const match = Object.entries(QUESTION_IMAGES).find(([key]) => key.endsWith('/' + file));
+  return match ? match[1] : null;
+}
+
 // Muestra una pregunta. Si no está revelada solo se ve enunciado y
 // botón Revelar; tras revelar, aparece la respuesta y los botones tick/cruz.
 export default function QuestionCard({
@@ -27,6 +42,22 @@ export default function QuestionCard({
       </header>
 
       <div className="question-card__body">
+        {question.image && resolveImage(question.image) && (
+          <img
+            className="question-card__image"
+            src={resolveImage(question.image)}
+            alt=""
+            style={{
+              display: 'block',
+              maxHeight: '200px',
+              width: 'auto',
+              maxWidth: '100%',
+              objectFit: 'contain',
+              borderRadius: '8px',
+              margin: '0 auto 12px'
+            }}
+          />
+        )}
         <p className="question-card__question">{question.question}</p>
         {revealed && (
           <p className="question-card__answer">
