@@ -1,6 +1,6 @@
 {
-  "category": "entretenimiento",
-  "categoryLabel": "Entretenimiento",
+  "category": "cine_series",
+  "categoryLabel": "Cine & Series",
   "icon": "🎬",
   "color": "#ec407a",
   "totalQuestions": 150,

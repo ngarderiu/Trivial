@@ -11,12 +11,12 @@ export const CATEGORIES = [
     categoryKey: 'geografia'
   },
   {
-    id: 'entretenimiento',
-    name: 'Entretenimiento',
-    color: '#E8529A',
+    id: 'cine_series',
+    name: 'Cine & Series',
+    color: '#ec407a',
     bgColor: '#f8bbd0',
     icon: '🎬',
-    categoryKey: 'entretenimiento'
+    categoryKey: 'cine_series'
   },
   {
     id: 'historia',
@@ -27,12 +27,12 @@ export const CATEGORIES = [
     categoryKey: 'historia'
   },
   {
-    id: 'arte',
-    name: 'Arte y Literatura',
-    color: '#9B6FBF',
+    id: 'musica',
+    name: 'Música',
+    color: '#9b59b6',
     bgColor: '#e1bee7',
-    icon: '🎨',
-    categoryKey: 'arte'
+    icon: '🎵',
+    categoryKey: 'musica'
   },
   {
     id: 'ciencia',
