@@ -124,22 +124,30 @@ export default function GameScreen({ game }) {
     const owned = quesitos[playerId] ?? [];
     const onSede = isSedePosition(currentPos);
 
-    // 2) Sede en la que SÍ se puede ganar quesito
-    if (onSede && canEarnQuesito(owned, cat, mode)) {
-      grantQuesitoToCurrent(cat); // resetea racha
-      // ¿Le da todos los quesitos? → al centro y pasa turno
-      const willHaveAll = new Set([...owned, cat]).size >= modeDef.quesitosToWin;
-      if (willHaveAll) {
-        moveCurrentPlayerToCenter();
-        passTurn();
-        setStep('awaiting-dice');
-        return;
+    // 2) En SEDE: nunca activa la racha bonus. Siempre resetea el contador
+    //    (gane o no quesito). El bonus solo se activa con aciertos en
+    //    casillas normales.
+    if (onSede) {
+      if (canEarnQuesito(owned, cat, mode)) {
+        // Gana quesito → grantQuesitoToCurrent ya resetea racha por dentro
+        grantQuesitoToCurrent(cat);
+        const willHaveAll =
+          new Set([...owned, cat]).size >= modeDef.quesitosToWin;
+        if (willHaveAll) {
+          moveCurrentPlayerToCenter();
+          passTurn();
+          setStep('awaiting-dice');
+          return;
+        }
+      } else {
+        // Sede con quesito ya conseguido: acierto sin premio, racha reset.
+        resetStreak(playerId);
       }
       setStep('awaiting-dice');
       return;
     }
 
-    // 3) Acierto sin quesito (casilla normal o sede ya conseguida)
+    // 3) Casilla NORMAL: incrementa la racha y puede disparar el bonus.
     const newStreak = (streaks[playerId] ?? 0) + 1;
     incrementStreak(playerId);
     if (newStreak >= STREAK_TRIGGER) {
