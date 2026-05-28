@@ -139,6 +139,7 @@ export default function GameScreen({ game }) {
           setStep('awaiting-dice');
           return;
         }
+        passTurn();
       } else {
         // Sede con quesito ya conseguido: acierto sin premio, racha reset.
         resetStreak(playerId);
