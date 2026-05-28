@@ -46,9 +46,16 @@ export default function QuestionCard({
         )}
         <p className="question-card__question">{question.question}</p>
         {revealed && (
-          <p className="question-card__answer">
-            <strong>Respuesta:</strong> {question.answer}
-          </p>
+          <>
+            <p className="question-card__answer">
+              <strong>Respuesta:</strong> {question.answer}
+            </p>
+            {question.comment && (
+              <p className="question-card__comment">
+                ℹ️ {question.comment}
+              </p>
+            )}
+          </>
         )}
       </div>
 
